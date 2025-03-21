@@ -4,7 +4,7 @@ export const Title: React.FC<{
 }> = ({ title }) => {
 	return (
         <div className="flex flex-row justify-between pr-5">
-            <h1 className="text-2xl font-semibold">Request Pengadaan Supply {title}</h1>
+            <h1 className="text-2xl font-semibold">Request Pengadaan {title}</h1>
         </div>
 	);
 };
