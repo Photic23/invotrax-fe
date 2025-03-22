@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 import Status, { DetailPengadaanStatus } from "@/components/elements/detail/Status";
 import { InputField } from "@/components/elements/detail/InputField";
 
-export default function PengadaanDetail({ detailPengadaanId } : { detailPengadaanId: number }) {
+export default function PengadaanDetail() {
     const [status, setStatus] = useState<DetailPengadaanStatus>('diajukan');
     const [role, setRole] = useState<string>('supplier'); // Later change if role permission is added
     const [pengadaan, setPengadaan] = useState<string>(""); // Ensure this is always a string
