@@ -111,7 +111,7 @@ export default function PenawaranTable() {
                 <td className="border-b p-2">{row.status}</td>
                 <td className="border-b p-2">{format(new Date(row.created_at), "yyyy-MM-dd")}</td>
                 <td className="border-b p-2">
-                  <Button variant="ghost" onClick={() => router.push(`/penawaran-pengadaan/edit/${row.id}`)}>
+                  <Button variant="ghost" onClick={() => router.push(`/penawaran-pengadaan/${row.id}/update`)}>
                     <PencilIcon className="h-4 w-4" />
                   </Button>
                 </td>
