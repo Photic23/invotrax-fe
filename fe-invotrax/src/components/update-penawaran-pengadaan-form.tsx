@@ -172,20 +172,20 @@ export default function UpdatePenawaranPengadaanForm({ penawaranId }: UpdatePena
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
-          <div>
+          {/* <div>
             <Label>Nama Supplier</Label>
             <p className="text-sm mt-1">{formData.nama_supplier}</p>
-          </div>
+          </div> */}
 
           <div>
             <Label>Nama Produk</Label>
             <p className="text-sm mt-1">{formData.nama_produk}</p>
           </div>
 
-          <div>
+          {/* <div>
             <Label>Kategori Produk</Label>
             <p className="text-sm mt-1">{formData.kategori_produk}</p>
-          </div>
+          </div> */}
 
           <div>
             <Label>Jumlah Produk</Label>
