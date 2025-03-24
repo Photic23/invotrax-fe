@@ -9,7 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 export default function CreatePenawaranPengadaanPage() {
   const { logout } = useAuth();
   return (
-    <ProtectedRoute requiredRole="staff">
+    <ProtectedRoute requiredRole={["staff", "customer"]}>
       <div className="min-h-screen flex flex-col">
         {/* Navbar */}
         <header className="border-b">
