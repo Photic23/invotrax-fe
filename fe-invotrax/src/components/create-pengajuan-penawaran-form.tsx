@@ -50,66 +50,66 @@ export default function CreatePenawaranPengadaanForm() {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/kategori/`, {
-          method: "GET",
-          headers: { 
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
+//   useEffect(() => {
+//     const fetchCategories = async () => {
+//       try {
+//         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/kategori/`, {
+//           method: "GET",
+//           headers: { 
+//             Authorization: `Bearer ${token}`,
+//             "Content-Type": "application/json",
+//           },
+//         });
   
-        if (!response.ok) throw new Error("Gagal mengambil data kategori.");
+//         if (!response.ok) throw new Error("Gagal mengambil data kategori.");
   
-        const categoriesData = await response.json();
-        if (Array.isArray(categoriesData)) {
-          setCategories(categoriesData);
-        }
+//         const categoriesData = await response.json();
+//         if (Array.isArray(categoriesData)) {
+//           setCategories(categoriesData);
+//         }
         
-      } catch (error) {
-        console.error("Error fetching categories:", error);
-        toast({
-          title: "Error",
-          description: "Gagal mengambil data kategori.",
-          variant: "destructive",
-        });
-      }
-    };
+//       } catch (error) {
+//         console.error("Error fetching categories:", error);
+//         toast({
+//           title: "Error",
+//           description: "Gagal mengambil data kategori.",
+//           variant: "destructive",
+//         });
+//       }
+//     };
   
-    const fetchSuppliers = async () => {
-      try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admins/users/?role=vendor`, {
-          method: "GET",
-          headers: { 
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
+//     const fetchSuppliers = async () => {
+//       try {
+//         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admins/users/?role=vendor`, {
+//           method: "GET",
+//           headers: { 
+//             Authorization: `Bearer ${token}`,
+//             "Content-Type": "application/json",
+//           },
+//         });
   
-        if (!response.ok) throw new Error("Gagal mengambil data supplier.");
+//         if (!response.ok) throw new Error("Gagal mengambil data supplier.");
   
-        const suppliersData = await response.json();
-        if (Array.isArray(suppliersData)) {
-          setSuppliers(suppliersData);
-        }
+//         const suppliersData = await response.json();
+//         if (Array.isArray(suppliersData)) {
+//           setSuppliers(suppliersData);
+//         }
         
-      } catch (error) {
-        console.error("Error fetching suppliers:", error);
-        toast({
-          title: "Error",
-          description: "Gagal mengambil data supplier.",
-          variant: "destructive",
-        });
-      }
-    };
+//       } catch (error) {
+//         console.error("Error fetching suppliers:", error);
+//         toast({
+//           title: "Error",
+//           description: "Gagal mengambil data supplier.",
+//           variant: "destructive",
+//         });
+//       }
+//     };
   
-    if (token) {
-      fetchCategories();
-      fetchSuppliers();
-    }
-  }, [toast, token]);  
+//     if (token) {
+//       fetchCategories();
+//       fetchSuppliers();
+//     }
+//   }, [toast, token]);  
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
