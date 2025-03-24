@@ -54,7 +54,7 @@ export default function CreatePenawaranPengadaanForm() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/kategori/`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/manajemen_stok/kategori/`, {
           method: "GET",
           headers: { 
             Authorization: `Bearer ${token}`,
@@ -112,6 +112,15 @@ export default function CreatePenawaranPengadaanForm() {
     }
   }, [toast, token]);  
 
+  const isValidURL = (url: string): boolean => {
+    try {
+      const parsedUrl = new URL(url);
+      return parsedUrl.protocol === "http:" || parsedUrl.protocol === "https:";
+    } catch (error) {
+      return false;
+    }
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -163,6 +172,10 @@ export default function CreatePenawaranPengadaanForm() {
     if (formData.harga_diajukan && isNaN(parseFloat(formData.harga_diajukan.replace(/,/g, '')))) {
       newErrors.harga_diajukan = "Harga harus berupa angka";
     }
+
+    if (formData.url_foto_produk && !isValidURL(formData.url_foto_produk)) {
+      newErrors.url_foto_produk = "URL Foto Produk tidak valid. Masukkan URL yang dimulai dengan http:// atau https://";
+    }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -203,7 +216,7 @@ export default function CreatePenawaranPengadaanForm() {
       
       console.log("Sending payload:", payload);
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/penawaran/`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/penawaran/penawaran-pengadaan/`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -392,21 +405,18 @@ export default function CreatePenawaranPengadaanForm() {
             )}
           </div>
 
-          {/* URL Foto Produk - changed to text input */}
+          {/* URL Foto Produk */}
           <div>
-            <Label htmlFor="url_foto_produk">Foto Produk (Text)</Label>
+            <Label htmlFor="url_foto_produk">URL Foto Produk</Label>
             <Input
               id="url_foto_produk"
               name="url_foto_produk"
               value={formData.url_foto_produk}
               onChange={handleChange}
-              placeholder="Masukkan Text Foto Produk"
+              placeholder="Masukkan URL Foto Produk"
               type="text"
               className={errors.url_foto_produk ? "border-red-500" : ""}
             />
-            <p className="text-gray-500 text-xs mt-1">
-              Masukkan text deskripsi foto produk
-            </p>
             {errors.url_foto_produk && (
               <p className="text-red-500 text-sm mt-1">{errors.url_foto_produk}</p>
             )}
