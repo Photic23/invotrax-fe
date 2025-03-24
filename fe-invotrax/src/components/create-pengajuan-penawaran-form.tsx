@@ -43,7 +43,7 @@ export default function CreatePenawaranPengadaanForm() {
   const [formData, setFormData] = useState({
     
     nama_produk: "",
-    
+    harga_diajukan: "", 
     jumlah_produk: "",
     url_foto_produk: "",
     deskripsi_produk: "",
@@ -183,6 +183,7 @@ export default function CreatePenawaranPengadaanForm() {
         jumlah_produk: formData.jumlah_produk ? parseInt(formData.jumlah_produk) : null,
         url_foto_produk: url_foto_produk,
         deskripsi_produk: formData.deskripsi_produk || null,
+        harga_diajukan: formData.harga_diajukan ? parseFloat(formData.harga_diajukan.replace(/,/g, '')) : null,
       };
       
       console.log("Sending payload:", payload);
@@ -388,8 +389,8 @@ export default function CreatePenawaranPengadaanForm() {
           </div>
 
           {/* Harga Diajukan */}
-          {/* <div>
-            <Label htmlFor="harga_diajukan">Harga Diajukan (per unit)</Label>
+           <div>
+            <Label htmlFor="harga_diajukan">Harga Diajukan (Total semua unit)</Label>
             <Input
               id="harga_diajukan"
               name="harga_diajukan"
@@ -403,7 +404,7 @@ export default function CreatePenawaranPengadaanForm() {
             {errors.harga_diajukan && (
               <p className="text-red-500 text-sm mt-1">{errors.harga_diajukan}</p>
             )}
-          </div> */}
+          </div> 
         </CardContent>
 
         <CardFooter>

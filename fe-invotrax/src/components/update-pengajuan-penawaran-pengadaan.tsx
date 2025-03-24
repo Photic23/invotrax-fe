@@ -29,6 +29,7 @@ export default function EditPenawaranPengadaanForm({ penawaranId }: EditPenawara
     jumlah_produk: "",
     deskripsi_produk: "",
     url_foto_produk: "",
+    harga_diajukan: "",
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -55,6 +56,7 @@ export default function EditPenawaranPengadaanForm({ penawaranId }: EditPenawara
           jumlah_produk: penawaranData.jumlah_produk?.toString() || "",
           deskripsi_produk: penawaranData.deskripsi_produk || "",
           url_foto_produk: penawaranData.url_foto_produk || "",
+          harga_diajukan: penawaranData.harga_diajukan?.toString() || "",
         });
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -166,6 +168,16 @@ export default function EditPenawaranPengadaanForm({ penawaranId }: EditPenawara
                 type="url"
                 name="url_foto_produk"
                 value={formData.url_foto_produk}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div>
+              <Label>Harga Diajukan</Label>
+              <Input
+                type="number"
+                name="harga_diajukan"
+                value={formData.harga_diajukan}
                 onChange={handleChange}
               />
             </div>
