@@ -36,7 +36,7 @@ export default function UpdatePenawaranPengadaanForm({ penawaranId }: UpdatePena
     const fetchPenawaran = async () => {
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/penawaran-pengadaan/${penawaranId}/`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/penawaran/penawaran-pengadaan/${penawaranId}/`,
           {
             method: "GET",
             headers: { Authorization: `Bearer ${token}` },
@@ -130,7 +130,7 @@ export default function UpdatePenawaranPengadaanForm({ penawaranId }: UpdatePena
       };
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/penawaran-pengadaan/${penawaranId}/update_penawaran_pengadaan/`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/penawaran/penawaran-pengadaan/${penawaranId}/update_penawaran_pengadaan/`,
         {
           method: "PATCH",
           headers: {

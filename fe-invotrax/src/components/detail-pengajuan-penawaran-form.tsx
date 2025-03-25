@@ -59,7 +59,7 @@ async function fetchPengajuanDetail() {
     try {
         setIsLoading(true);
         const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/pengajuan_penawaran_pengadaan/${pengajuanId}/`,
+            `${process.env.NEXT_PUBLIC_API_URL}/api/pengajuan/pengajuan_penawaran_pengadaan/${pengajuanId}/`,
             {
                 method: "GET",
                 headers: {
@@ -93,7 +93,7 @@ async function fetchPengajuanDetail() {
 const handleDeletePengajuan = async () => {
     try {
         const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/pengajuan_penawaran_pengadaan/${pengajuanId}/delete/`,
+            `${process.env.NEXT_PUBLIC_API_URL}/api/pengajuan/pengajuan_penawaran_pengadaan/${pengajuanId}/delete/`,
             {
             method: "DELETE",
             headers: {
@@ -151,7 +151,7 @@ const handleTolak = async () => {
         };
 
         const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/pengajuan_penawaran_pengadaan/${pengajuanId}/`,
+            `${process.env.NEXT_PUBLIC_API_URL}/api/pengajuan/pengajuan_penawaran_pengadaan/${pengajuanId}/`,
             {
                 method: "PATCH",
                 headers: {
@@ -212,7 +212,7 @@ const handleUpdateStatus = async (newStatus: string) => {
     // }
 
         const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/pengajuan_penawaran_pengadaan/${pengajuanId}/`,
+            `${process.env.NEXT_PUBLIC_API_URL}/api/pengajuan/pengajuan_penawaran_pengadaan/${pengajuanId}/`,
             {
                 method: "PATCH",
                 headers: {

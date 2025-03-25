@@ -61,7 +61,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
     try {
       setIsLoading(true);
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/penawaran-pengadaan/${pengadaanId}/`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/penawaran/penawaran-pengadaan/${pengadaanId}/`,
         {
           method: "GET",
           headers: {
@@ -95,7 +95,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
   const handleDeletePengadaan = async () => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/penawaran-pengadaan/${pengadaanId}/delete/`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/penawaran/penawaran-pengadaan/${pengadaanId}/delete/`,
         {
           method: "DELETE",
           headers: {
@@ -153,7 +153,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
       };
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/penawaran-pengadaan/${pengadaanId}//`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/penawaran/penawaran-pengadaan/${pengadaanId}//`,
         {
           method: "PATCH",
           headers: {
@@ -213,7 +213,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
     // }
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/penawaran-pengadaan/${pengadaanId}/`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/penawaran/penawaran-pengadaan/${pengadaanId}/`,
         {
           method: "PATCH",
           headers: {
