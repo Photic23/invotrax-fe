@@ -95,7 +95,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
   const handleDeletePengadaan = async () => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/penawaran/penawaran-pengadaan/${pengadaanId}/delete/`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/penawaran/penawaran-pengadaan/${pengadaanId}/`,
         {
           method: "DELETE",
           headers: {
@@ -401,7 +401,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
                 Ubah Request
               </Button>, 
             button2: 
-              <Button variant="destructive" onClick={handleDeletePengadaan}>
+              <Button variant="destructive" onClick={() => setConfirmOpen(true)}>
                 Cancel Request
               </Button>, 
             field1: 
@@ -485,7 +485,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
                 Ubah Request
               </Button>, 
             button2: 
-              <Button variant="destructive" onClick={handleDeletePengadaan}>
+              <Button variant="destructive" onClick={() => setConfirmOpen(true)}>
                 Cancel Request
               </Button>,
             field1: 
@@ -568,7 +568,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
               Batal
             </Button>
             <Button variant="destructive" onClick={handleDeletePengadaan}>
-              Hapus Produk
+              Hapus
             </Button>
           </DialogFooter>
         </DialogContent>

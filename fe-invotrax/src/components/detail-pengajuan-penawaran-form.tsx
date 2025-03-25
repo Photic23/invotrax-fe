@@ -93,7 +93,7 @@ async function fetchPengajuanDetail() {
 const handleDeletePengajuan = async () => {
     try {
         const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/pengajuan/pengajuan_penawaran_pengadaan/${pengajuanId}/delete/`,
+            `${process.env.NEXT_PUBLIC_API_URL}/api/pengajuan/pengajuan_penawaran_pengadaan/${pengajuanId}/`,
             {
             method: "DELETE",
             headers: {
@@ -400,7 +400,7 @@ const getAdditionalFields = (status: string) => {
                     Ubah Request
                 </Button>, 
             button2: 
-                <Button variant="destructive" onClick={handleDeletePengajuan}>
+                <Button variant="destructive" onClick={() => setConfirmOpen(true)}>
                     Cancel Request
                 </Button>, 
             field1: 
@@ -484,7 +484,7 @@ const getAdditionalFields = (status: string) => {
                     Ubah Request
                 </Button>, 
             button2: 
-                <Button variant="destructive" onClick={handleDeletePengajuan}>
+                <Button variant="destructive" onClick={() => setConfirmOpen(true)}>
                     Cancel Request
                 </Button>,
             field1: 
@@ -567,7 +567,7 @@ return (
             Batal
             </Button>
             <Button variant="destructive" onClick={handleDeletePengajuan}>
-            Hapus Produk
+            Hapus
             </Button>
         </DialogFooter>
         </DialogContent>
