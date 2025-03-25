@@ -21,7 +21,7 @@ DialogFooter,
 } from "@/components/ui/dialog";
 import { ArrowLeft } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { DetailPengadaanStatus } from "./elements/detail/Status";
+import Status, { DetailPengadaanStatus } from "./elements/detail/Status";
 import { Input } from "./ui/input";
 
 interface PengajuanPenawaranPengadaan {
@@ -274,7 +274,7 @@ if (!pengajuan) {
 
 const getAdditionalFields = (status: string) => {
     switch (user?.role) {
-    case 'vendor':
+    case 'staff':
         switch (status) {
         case 'diajukan':
             return {
@@ -390,13 +390,13 @@ const getAdditionalFields = (status: string) => {
             field3: <div></div>
             }
         }
-    case 'staff':
+    case 'customer':
     //case 'manager':
     switch (status) {
         case 'diajukan':
         return {
             button1: 
-                <Button onClick={() => router.push(`/${pengajuanId}/update`)}>
+                <Button onClick={() => router.push(`/pengajuan_penawaran_pengadaan/${pengajuanId}/update`)}>
                     Ubah Request
                 </Button>, 
             button2: 
@@ -480,7 +480,7 @@ const getAdditionalFields = (status: string) => {
         case 'ditolak':
         return {
             button1: 
-                <Button onClick={() => router.push(`/${pengajuanId}/update`)}>
+                <Button onClick={() => router.push(`/pengajuan_penawaran_pengadaan/${pengajuanId}/update`)}>
                     Ubah Request
                 </Button>, 
             button2: 
@@ -502,11 +502,11 @@ const getAdditionalFields = (status: string) => {
 }
 
 return (
-    <Card className="max-w-2xl mx-auto">
-    <CardHeader className="relative">
+    <Card className="max-w-4xl mx-auto">
+    <CardHeader className="flex-row justify-between items-center p-4">
         <button
         onClick={() => router.push("/pengajuan_penawaran_pengadaan")}
-        className="absolute left-4 top-4 flex items-center text-gray-600 hover:text-blue-800 transition"
+        className="flex items-center text-gray-600 hover:text-blue-800 transition"
         >
         <ArrowLeft className="w-5 h-5 mr-2" />
         <span>Kembali</span>
@@ -514,6 +514,7 @@ return (
         <CardTitle className="text-2xl font-bold text-center">
         Request pengajuan Supply {pengajuan.nama_produk}
         </CardTitle>
+        <Status status={pengajuan.status}/>
     </CardHeader>
     <CardContent className="space-y-4">
         {/* <div>
@@ -545,7 +546,7 @@ return (
         {getAdditionalFields(pengajuan.status)?.field3}
     </CardContent>
     <CardFooter className="flex justify-between">
-        {/* <Button onClick={() => router.push(`/${pengajuanId}/update`)}>
+        {/* <Button onClick={() => router.push(`/pengajuan_penawaran_pengadaan/${pengajuanId}/update`)}>
         Ubah Request
         </Button>
         <Button variant="destructive" onClick={() => setConfirmOpen(true)}>

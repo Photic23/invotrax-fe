@@ -39,7 +39,7 @@ export default function EditPenawaranPengadaanForm({ penawaranId }: EditPenawara
     const fetchData = async () => {
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/pengajuan/pengajuan/pengajuan_penawaran_pengadaan/${penawaranId}/`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/pengajuan/pengajuan_penawaran_pengadaan/${penawaranId}/`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }

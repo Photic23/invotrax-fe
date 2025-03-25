@@ -4,12 +4,12 @@ import { Timer, Truck, X, Check } from "lucide-react";
 export type DetailPengadaanStatus = "diajukan" | "diproses" | "dikirim" | "diterima" | "ditolak";
 
 interface StatusProps {
-    status: DetailPengadaanStatus;
+    status: string;
 }
 
 const Status: React.FC<StatusProps> = ({ status }) => {
     
-    const getDetailPengadaanStatus = (status: DetailPengadaanStatus) => {
+    const getDetailPengadaanStatus = (status: string) => {
         switch (status) {
             case "diajukan":
                 return { label: "Diajukan", icon: <Timer size={16} strokeWidth={1.5}/> };

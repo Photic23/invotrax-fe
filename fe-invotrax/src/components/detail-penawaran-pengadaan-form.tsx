@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { ArrowLeft } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { DetailPengadaanStatus } from "./elements/detail/Status";
+import Status, { DetailPengadaanStatus } from "./elements/detail/Status";
 import { Input } from "./ui/input";
 
 interface PenawaranPengadaan {
@@ -397,7 +397,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
         case 'diajukan':
           return {
             button1: 
-              <Button onClick={() => router.push(`/${pengadaanId}/update`)}>
+              <Button onClick={() => router.push(`/penawaran-pengadaan/${pengadaanId}/update`)}>
                 Ubah Request
               </Button>, 
             button2: 
@@ -481,7 +481,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
         case 'ditolak':
           return {
             button1: 
-              <Button onClick={() => router.push(`/${pengadaanId}/update`)}>
+              <Button onClick={() => router.push(`/penawaran-pengadaan/${pengadaanId}/update`)}>
                 Ubah Request
               </Button>, 
             button2: 
@@ -503,11 +503,11 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
   }
 
   return (
-    <Card className="max-w-2xl mx-auto">
-      <CardHeader className="relative">
+    <Card className="max-w-4xl mx-auto">
+      <CardHeader className="flex-row justify-between items-center p-4">
         <button
           onClick={() => router.push("/penawaran-pengadaan")}
-          className="absolute left-4 top-4 flex items-center text-gray-600 hover:text-blue-800 transition"
+          className="flex items-center text-gray-600 hover:text-blue-800 transition"
         >
           <ArrowLeft className="w-5 h-5 mr-2" />
           <span>Kembali</span>
@@ -515,6 +515,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
         <CardTitle className="text-2xl font-bold text-center">
           Request Pengadaan Supply {pengadaan.nama_produk}
         </CardTitle>
+        <Status status={pengadaan.status}/>
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
@@ -546,7 +547,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
         {getAdditionalFields(pengadaan.status)?.field3}
       </CardContent>
       <CardFooter className="flex justify-between">
-        {/* <Button onClick={() => router.push(`/${pengadaanId}/update`)}>
+        {/* <Button onClick={() => router.push(`/penawaran-pengadaan/${pengadaanId}/update`)}>
           Ubah Request
         </Button>
         <Button variant="destructive" onClick={() => setConfirmOpen(true)}>
