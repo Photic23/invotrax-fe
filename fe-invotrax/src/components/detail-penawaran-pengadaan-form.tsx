@@ -146,11 +146,10 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
   };
 
   const handleTolak = async () => {
+    setIsLoading(true);
     try {
-      const status = 'ditolak'
-
-      let payload : any = {
-        status: status,
+      const payload : any = {
+        status: 'ditolak',
       };
 
       const response = await fetch(
@@ -166,6 +165,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
       );
 
       if (response.ok) {
+        setPengadaan(prev => prev ? {...prev, status: 'ditolak'} : null);
         toast({
           title: "Sukses",
           description: "Pengadaan " + status,
@@ -193,74 +193,65 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
     }
   }
 
-  const handleUpdateStatus = async () => {
-      try {        
-        const status = pengadaan?.status
-        let newStatus = status
+  const handleUpdateStatus = async (newStatus: string) => {
+    if (!pengadaan) return;
+    try {        
+      const payload = {
+        status: newStatus,
+      };
 
-      if (status === 'diajukan') {
-        newStatus = 'diproses'
-      } else if (status === 'diproses') {
-        newStatus = 'dikirim'
-      } else if (status === 'dikirim') {
-        newStatus = 'diterima'
-      }
+    // if (pengadaan?.status === 'diajukan') {
+    //   payload = {
+    //     ...payload,
+    //     tanggal_estimasi: pengadaan?.tanggal_estimasi
+    //   }
+    // } else if (pengadaan?.status === 'diproses' || pengadaan?.status === 'dikirim') {
+    //   payload = {
+    //     ...payload,
+    //     tanggal_diterima_dikirim: Date()
+    //   }
+    // }
 
-        let payload : any = {
-          status: newStatus,
-        };
-
-      // if (pengadaan?.status === 'diajukan') {
-      //   payload = {
-      //     ...payload,
-      //     tanggal_estimasi: pengadaan?.tanggal_estimasi
-      //   }
-      // } else if (pengadaan?.status === 'diproses' || pengadaan?.status === 'dikirim') {
-      //   payload = {
-      //     ...payload,
-      //     tanggal_diterima_dikirim: Date()
-      //   }
-      // }
-  
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/penawaran-pengadaan/${pengadaanId}/`,
-          {
-            method: "PATCH",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(payload),
-          }
-        );
-  
-        if (response.ok) {
-          toast({
-            title: "Sukses",
-            description: "Pengadaan " + newStatus,
-            variant: "default",
-          });
-          router.push(`/penawaran-pengadaan/${pengadaanId}/`); // Redirect to detail page
-        } else {
-          const errorData = await response.json();
-          toast({
-            title: "Error",
-            description: "Gagal memproses request",
-            variant: "destructive",
-          });
-          console.error("API error:", errorData);
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/penawaran-pengadaan/${pengadaanId}/`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
         }
-      } catch (error) {
-        console.error("Error processing request:", error);
+      );
+
+      if (response.ok) {
+        setPengadaan({...pengadaan, status: newStatus});
+        toast({
+          title: "Sukses",
+          description: "Pengadaan " + newStatus,
+          variant: "default",
+        });
+        router.push(`/penawaran-pengadaan/${pengadaanId}/`); // Redirect to detail page
+      } else {
+        const errorData = await response.json();
         toast({
           title: "Error",
-          description: "Terjadi kesalahan saat memproses request",
+          description: "Gagal memproses request",
           variant: "destructive",
         });
-      } finally {
-        setIsLoading(false);
+        console.error("API error:", errorData);
       }
+    } catch (error) {
+      console.error("Error processing request:", error);
+      toast({
+        title: "Error",
+        description: "Terjadi kesalahan saat memproses request",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
+  }
 
   if (isLoading) {
     return <p>Loading...</p>;
@@ -289,11 +280,11 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
           case 'diajukan':
             return {
               button1: 
-                <Button onClick={handleUpdateStatus}>
+                <Button onClick={() => handleUpdateStatus('diproses')}>
                   Setujui Request
                 </Button>, 
               button2: 
-                <Button onClick={handleTolak}>
+                <Button onClick={() => handleTolak}>
                   Tolak Request
                 </Button>,
               field1: 
@@ -324,7 +315,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
           case 'diproses':
             return {
               button1: 
-                <Button onClick={handleUpdateStatus}>
+                <Button onClick={() => handleUpdateStatus('dikirim')}>
                   Kirim Pesanan
                 </Button>, 
               button2: <div></div>,
@@ -445,7 +436,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
         case 'dikirim':
           return {
             button1: 
-              <Button onClick={handleUpdateStatus}>
+              <Button onClick={() => handleUpdateStatus('diterima')}>
                 Terima Pesanan
               </Button>, 
             button2: <div></div>,

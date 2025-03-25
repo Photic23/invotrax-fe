@@ -57,75 +57,75 @@ useEffect(() => { fetchPengajuanDetail();}, [pengajuanId, token, toast]);
 
 async function fetchPengajuanDetail() {
     try {
-    setIsLoading(true);
-    const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/pengajuan_penawaran_pengadaan/${pengajuanId}/`,
-        {
-        method: "GET",
-        headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-        },
+        setIsLoading(true);
+        const response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/api/pengajuan_penawaran_pengadaan/${pengajuanId}/`,
+            {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        if (response.ok) {
+            const data = await response.json();
+            setPengajuan(data);
+        } else {
+            toast({
+                title: "Error",
+                description: "Gagal mengambil detail pengajuan",
+                variant: "destructive",
+            });
         }
-    );
-    if (response.ok) {
-        const data = await response.json();
-        setPengajuan(data);
-    } else {
-        toast({
-        title: "Error",
-        description: "Gagal mengambil detail pengajuan",
-        variant: "destructive",
-        });
-    }
     } catch (error) {
-    console.error("Error fetching pengajuan detail:", error);
-    toast({
-        title: "Error",
-        description: "Terjadi kesalahan saat mengambil data pengajuan",
-        variant: "destructive",
-    });
+        console.error("Error fetching pengajuan detail:", error);
+        toast({
+            title: "Error",
+            description: "Terjadi kesalahan saat mengambil data pengajuan",
+            variant: "destructive",
+        });
     } finally {
-    setIsLoading(false);
+        setIsLoading(false);
     }
 }
 
 const handleDeletePengajuan = async () => {
     try {
-    const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/pengajuan_penawaran_pengadaan/${pengajuanId}/delete/`,
-        {
-        method: "DELETE",
-        headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-        },
-        }
-    );
+        const response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/api/pengajuan_penawaran_pengadaan/${pengajuanId}/delete/`,
+            {
+            method: "DELETE",
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+            }
+        );
 
-    if (response.ok) {
-        toast({
-        title: "Sukses",
-        description: "Request berhasil dihapus",
-        variant: "default",
-        });
-        router.push("/pengajuan_penawaran_pengadaan"); 
-    } else {
-        const errorData = await response.json();
-        toast({
-        title: "Error",
-        description: "Gagal menghapus request",
-        variant: "destructive",
-        });
-        console.error("Delete error:", errorData);
-    }
+        if (response.ok) {
+            toast({
+            title: "Sukses",
+            description: "Request berhasil dihapus",
+            variant: "default",
+            });
+            router.push("/pengajuan_penawaran_pengadaan"); 
+        } else {
+            const errorData = await response.json();
+            toast({
+            title: "Error",
+            description: "Gagal menghapus request",
+            variant: "destructive",
+            });
+            console.error("Delete error:", errorData);
+        }
     } catch (error) {
-    console.error("Error deleting request:", error);
-    toast({
-        title: "Error",
-        description: "Terjadi kesalahan saat menghapus request",
-        variant: "destructive",
-    });
+        console.error("Error deleting request:", error);
+        toast({
+            title: "Error",
+            description: "Terjadi kesalahan saat menghapus request",
+            variant: "destructive",
+        });
     }
 };
 
@@ -135,77 +135,68 @@ const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElemen
     
     // Clear error when field is edited
     if (errors[name]) {
-    setErrors(prev => {
-        const newErrors = {...prev};
-        delete newErrors[name];
-        return newErrors;
-    });
+        setErrors(prev => {
+            const newErrors = {...prev};
+            delete newErrors[name];
+            return newErrors;
+        });
     }
 };
 
 const handleTolak = async () => {
+    setIsLoading(true);
     try {
-    const status = 'ditolak'
+        const payload = {
+            status: 'ditolak'
+        };
 
-    let payload : any = {
-        status: status,
-    };
+        const response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/api/pengajuan_penawaran_pengadaan/${pengajuanId}/`,
+            {
+                method: "PATCH",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(payload),
+            }
+        );
 
-    const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/pengajuan_penawaran_pengadaan/${pengajuanId}/`,
-        {
-        method: "PATCH",
-        headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
+        if (response.ok) {
+            setPengajuan(prev => prev ? {...prev, status: 'ditolak'} : null);
+            toast({
+                title: "Sukses",
+                description: "Pengajuan " + status,
+                variant: "default",
+            });
+            router.push(`/pengajuan_penawaran_pengadaan/${pengajuanId}/`); // Redirect to detail page
+        } else {
+            const errorData = await response.json();
+            toast({
+                title: "Error",
+                description: "Gagal memproses request",
+                variant: "destructive",
+            });
+            console.error("API error:", errorData);
         }
-    );
-
-    if (response.ok) {
-        toast({
-        title: "Sukses",
-        description: "Pengajuan " + status,
-        variant: "default",
-        });
-        router.push(`/pengajuan_penawaran_pengadaan/${pengajuanId}/`); // Redirect to detail page
-    } else {
-        const errorData = await response.json();
-        toast({
-        title: "Error",
-        description: "Gagal memproses request",
-        variant: "destructive",
-        });
-        console.error("API error:", errorData);
-    }
     } catch (error) {
-    console.error("Error processing request:", error);
-    toast({
-        title: "Error",
-        description: "Terjadi kesalahan saat memproses request",
-        variant: "destructive",
-    });
+        console.error("Error processing request:", error);
+        toast({
+            title: "Error",
+            description: "Terjadi kesalahan saat memproses request",
+            variant: "destructive",
+        });
     } finally {
-    setIsLoading(false);
+        setIsLoading(false);
     }
 }
 
-const handleUpdateStatus = async () => {
+const handleUpdateStatus = async (newStatus: string) => {
+    if (!pengajuan) return;
+
     try {        
-        const status = pengajuan?.status
-        let newStatus = status
-
-    if (status === 'diajukan') {
-        newStatus = 'diproses'
-    } else if (status === 'diproses') {
-        newStatus = 'dikirim'
-    } else if (status === 'dikirim') {
-        newStatus = 'diterima'
-    }
-
-        let payload : any = {
-        status: newStatus,
+        const payload = {
+            status: newStatus
         };
 
     // if (pengajuan?.status === 'diajukan') {
@@ -221,39 +212,40 @@ const handleUpdateStatus = async () => {
     // }
 
         const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/pengajuan_penawaran_pengadaan/${pengajuanId}/`,
-        {
-            method: "PATCH",
-            headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-            },
-            body: JSON.stringify(payload),
-        }
+            `${process.env.NEXT_PUBLIC_API_URL}/api/pengajuan_penawaran_pengadaan/${pengajuanId}/`,
+            {
+                method: "PATCH",
+                headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+                },
+                body: JSON.stringify(payload),
+            }
         );
 
         if (response.ok) {
-        toast({
-            title: "Sukses",
-            description: "Pengajuan " + newStatus,
-            variant: "default",
-        });
-        router.push(`/pengajuan_penawaran_pengadaan/${pengajuanId}/`); // Redirect to detail page
+            setPengajuan({...pengajuan, status: newStatus})
+            toast({
+                title: "Sukses",
+                description: "Pengajuan " + newStatus,
+                variant: "default",
+            });
+            router.push(`/pengajuan_penawaran_pengadaan/${pengajuanId}/`); // Redirect to detail page
         } else {
-        const errorData = await response.json();
-        toast({
-            title: "Error",
-            description: "Gagal memproses request",
-            variant: "destructive",
-        });
-        console.error("API error:", errorData);
+            const errorData = await response.json();
+            toast({
+                title: "Error",
+                description: "Gagal memproses request",
+                variant: "destructive",
+            });
+            console.error("API error:", errorData);
         }
     } catch (error) {
         console.error("Error processing request:", error);
         toast({
-        title: "Error",
-        description: "Terjadi kesalahan saat memproses request",
-        variant: "destructive",
+            title: "Error",
+            description: "Terjadi kesalahan saat memproses request",
+            variant: "destructive",
         });
     } finally {
         setIsLoading(false);
@@ -287,11 +279,11 @@ const getAdditionalFields = (status: string) => {
         case 'diajukan':
             return {
             button1: 
-                <Button onClick={handleUpdateStatus}>
+                <Button onClick={() => handleUpdateStatus('diproses')}>
                 Setujui Request
                 </Button>, 
             button2: 
-                <Button onClick={handleTolak}>
+                <Button onClick={() => handleTolak}>
                 Tolak Request
                 </Button>,
             field1: 
@@ -322,7 +314,7 @@ const getAdditionalFields = (status: string) => {
         case 'diproses':
             return {
             button1: 
-                <Button onClick={handleUpdateStatus}>
+                <Button onClick={() => handleUpdateStatus('dikirim')}>
                 Kirim Pesanan
                 </Button>, 
             button2: <div></div>,
@@ -443,7 +435,7 @@ const getAdditionalFields = (status: string) => {
         case 'dikirim':
         return {
             button1: 
-                <Button onClick={handleUpdateStatus}>
+                <Button onClick={() => handleUpdateStatus('diterima')}>
                     Terima Pesanan
                 </Button>, 
             button2: <div></div>,
