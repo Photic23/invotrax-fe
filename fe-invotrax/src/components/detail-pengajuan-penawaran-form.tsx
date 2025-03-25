@@ -169,7 +169,7 @@ const handleTolak = async () => {
         description: "Pengajuan " + status,
         variant: "default",
         });
-        router.push(`/pengajuan_penawaran_pengadaan/${pengajuanId}/`); // Redirect to product detail page
+        router.push(`/pengajuan_penawaran_pengadaan/${pengajuanId}/`); // Redirect to detail page
     } else {
         const errorData = await response.json();
         toast({
@@ -238,7 +238,7 @@ const handleUpdateStatus = async () => {
             description: "Pengajuan " + newStatus,
             variant: "default",
         });
-        router.push(`/pengajuan_penawaran_pengadaan/${pengajuanId}/`); // Redirect to product detail page
+        router.push(`/pengajuan_penawaran_pengadaan/${pengajuanId}/`); // Redirect to detail page
         } else {
         const errorData = await response.json();
         toast({

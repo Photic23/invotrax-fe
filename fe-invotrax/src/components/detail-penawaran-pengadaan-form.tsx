@@ -33,8 +33,8 @@ interface PenawaranPengadaan {
   deskripsi_produk: string;
   url_foto_produk: string;
   harga_diajukan: number;
-  tanggal_estimasi: Date;
-  tanggal_diterima_dikirim: Date;
+  // tanggal_estimasi: Date;
+  // tanggal_diterima_dikirim: Date;
   status: string;
 }
 
@@ -50,9 +50,9 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
   const router = useRouter();
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
   const { user, isLoggedIn, logout } = useAuth();
-  const [formData, setFormData] = useState({
-    tanggal_estimasi: "",
-  });
+  // const [formData, setFormData] = useState({
+  //   tanggal_estimasi: "",
+  // });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => { fetchPengadaanDetail();}, [pengadaanId, token, toast]);
@@ -133,7 +133,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    // setFormData((prev) => ({ ...prev, [name]: value }));
     
     // Clear error when field is edited
     if (errors[name]) {
@@ -171,7 +171,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
           description: "Pengadaan " + status,
           variant: "default",
         });
-        router.push(`/penawaran-pengadaan/${pengadaanId}/`); // Redirect to product detail page
+        router.push(`/penawaran-pengadaan/${pengadaanId}/`); // Redirect to detail page
       } else {
         const errorData = await response.json();
         toast({
@@ -210,17 +210,17 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
           status: newStatus,
         };
 
-      if (pengadaan?.status === 'diajukan') {
-        payload = {
-          ...payload,
-          tanggal_estimasi: pengadaan?.tanggal_estimasi
-        }
-      } else if (pengadaan?.status === 'diproses' || pengadaan?.status === 'dikirim') {
-        payload = {
-          ...payload,
-          tanggal_diterima_dikirim: Date()
-        }
-      }
+      // if (pengadaan?.status === 'diajukan') {
+      //   payload = {
+      //     ...payload,
+      //     tanggal_estimasi: pengadaan?.tanggal_estimasi
+      //   }
+      // } else if (pengadaan?.status === 'diproses' || pengadaan?.status === 'dikirim') {
+      //   payload = {
+      //     ...payload,
+      //     tanggal_diterima_dikirim: Date()
+      //   }
+      // }
   
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/api/penawaran-pengadaan/${pengadaanId}/`,
@@ -240,7 +240,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
             description: "Pengadaan " + newStatus,
             variant: "default",
           });
-          router.push(`/penawaran-pengadaan/${pengadaanId}/`); // Redirect to product detail page
+          router.push(`/penawaran-pengadaan/${pengadaanId}/`); // Redirect to detail page
         } else {
           const errorData = await response.json();
           toast({
@@ -270,17 +270,17 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
     return <p>Penawaran pengadaan tidak ditemukan.</p>;
   }
 
-  const formattedDate = pengadaan.tanggal_diterima_dikirim.toLocaleDateString('id-ID', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
-  });
+  // const formattedDate = pengadaan.tanggal_diterima_dikirim.toLocaleDateString('id-ID', {
+  //   day: 'numeric',
+  //   month: 'long',
+  //   year: 'numeric'
+  // });
 
-  const formattedEstimateDate = pengadaan.tanggal_estimasi.toLocaleDateString('id-ID', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
-  });
+  // const formattedEstimateDate = pengadaan.tanggal_estimasi.toLocaleDateString('id-ID', {
+  //   day: 'numeric',
+  //   month: 'long',
+  //   year: 'numeric'
+  // });
 
   const getAdditionalFields = (status: string) => {
     switch (user?.role) {
@@ -302,22 +302,23 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
                   <p>Rp {pengadaan.harga_diajukan.toLocaleString()}</p>
                 </div>,
               field2: 
-                <div className="space-y-2">
-                  <Label htmlFor="tanggal_estimasi">Estimasi Tanggal Produk Dikirim</Label>
-                  <Input
-                    id="tanggal_estimasi"
-                    name="tanggal_estimasi"
-                    type="number"
-                    value= {formData.tanggal_estimasi}
-                    onChange={handleChange}
-                    placeholder="Masukkan harga produk"
-                    min="0"
-                    className={errors.harga ? "border-red-500" : ""}
-                  />
-                  {errors.harga && (
-                    <p className="text-sm text-red-500">{errors.harga}</p>
-                  )}
-                </div>,
+                // <div className="space-y-2">
+                //   <Label htmlFor="tanggal_estimasi">Estimasi Tanggal Produk Dikirim</Label>
+                //   <Input
+                //     id="tanggal_estimasi"
+                //     name="tanggal_estimasi"
+                //     type="number"
+                //     value= {formData.tanggal_estimasi}
+                //     onChange={handleChange}
+                //     placeholder="Masukkan harga produk"
+                //     min="0"
+                //     className={errors.harga ? "border-red-500" : ""}
+                //   />
+                //   {errors.harga && (
+                //     <p className="text-sm text-red-500">{errors.harga}</p>
+                //   )}
+                // </div>
+                <div></div>,
               field3: <div></div>
             }
           case 'diproses':
@@ -328,10 +329,11 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
                 </Button>, 
               button2: <div></div>,
               field1: 
-                <div>
-                  <Label>Estimasi Tanggal Produk Dikirim</Label>
-                  <p>{formattedEstimateDate}</p>
-                </div>,
+                // <div>
+                //   <Label>Estimasi Tanggal Produk Dikirim</Label>
+                //   <p>{formattedEstimateDate}</p>
+                // </div>
+                <div></div>,
               field2: 
                 <div>
                   <Label>Harga yang Diterima (per unit)</Label>
@@ -348,10 +350,11 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
               button1: <div></div>, 
               button2: <div></div>,
               field1: 
-                <div>
-                  <Label>Tanggal Produk Dikirim</Label>
-                  <p>{formattedDate}</p>
-                </div>,
+                // <div>
+                //   <Label>Tanggal Produk Dikirim</Label>
+                //   <p>{formattedDate}</p>
+                // </div>
+                <div></div>,
               field2: 
                 <div>
                   <Label>Harga yang Diterima (per unit)</Label>
@@ -368,10 +371,11 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
               button1: <div></div>, 
               button2: <div></div>,
               field1: 
-                <div>
-                  <Label>Tanggal Produk Diterima</Label>
-                  <p>{formattedDate}</p>
-                </div>,
+                // <div>
+                //   <Label>Tanggal Produk Diterima</Label>
+                //   <p>{formattedDate}</p>
+                // </div>
+                <div></div>,
               field2: 
                 <div>
                   <Label>Harga yang Diterima (per unit)</Label>
@@ -422,10 +426,11 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
             button1: <div></div>, 
             button2: <div></div>, 
             field1:
-              <div>
-                <Label>Estimasi Tanggal Produk Dikirim</Label>
-                <p>{formattedEstimateDate}</p>
-              </div>,
+              // <div>
+              //   <Label>Estimasi Tanggal Produk Dikirim</Label>
+              //   <p>{formattedEstimateDate}</p>
+              // </div>
+              <div></div>,
             field2: 
               <div>
                 <Label>Harga yang Diterima (per unit)</Label>
@@ -445,10 +450,11 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
               </Button>, 
             button2: <div></div>,
             field1: 
-              <div>
-                <Label>Tanggal Produk Dikirim</Label>
-                <p>{formattedDate}</p>
-              </div>,
+              // <div>
+              //   <Label>Tanggal Produk Dikirim</Label>
+              //   <p>{formattedDate}</p>
+              // </div>
+              <div></div>,
             field2: 
               <div>
                 <Label>Harga yang Diterima (per unit)</Label>
@@ -465,10 +471,11 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
             button1: <div></div>, 
             button2: <div></div>,
             field1: 
-              <div>
-                <Label>Tanggal Produk Diterima</Label>
-                <p>{formattedDate}</p>
-              </div>,
+              // <div>
+              //   <Label>Tanggal Produk Diterima</Label>
+              //   <p>{formattedDate}</p>
+              // </div>
+              <div></div>,
             field2: 
               <div>
                 <Label>Harga yang Diterima (per unit)</Label>
