@@ -216,7 +216,7 @@ export default function CreatePenawaranPengadaanForm() {
       
       console.log("Sending payload:", payload);
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/penawaran/penawaran-pengadaan/`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/penawaran-pengadaan/`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

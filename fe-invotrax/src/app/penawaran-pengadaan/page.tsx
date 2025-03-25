@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 export default function PenawaranPengadaanPage() {
   const { logout, getToken } = useAuth();
   return (
-    <ProtectedRoute requiredRole="vendor">
+    <ProtectedRoute requiredRole={["staff", "vendor"]}>
       <div className="min-h-screen flex flex-col">
         {/* Navbar */}
         <header className="border-b">

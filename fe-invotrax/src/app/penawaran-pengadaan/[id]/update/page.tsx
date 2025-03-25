@@ -13,7 +13,7 @@ export default function EditPenawaranPengadaanPage() {
   const { logout } = useAuth();
 
   return (
-    <ProtectedRoute requiredRole="vendor">
+    <ProtectedRoute requiredRole={["staff", "vendor"]}>
       <div className="min-h-screen flex flex-col">
         {/* Navbar */}
         <header className="border-b">

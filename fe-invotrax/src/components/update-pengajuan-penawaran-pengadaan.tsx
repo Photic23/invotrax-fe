@@ -39,7 +39,7 @@ export default function EditPenawaranPengadaanForm({ penawaranId }: EditPenawara
     const fetchData = async () => {
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/pengajuan/pengajuanpenawaranpengadaan/${penawaranId}/`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/pengajuan_penawaran_pengadaan/${penawaranId}/`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -83,7 +83,7 @@ export default function EditPenawaranPengadaanForm({ penawaranId }: EditPenawara
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/pengajuan/pengajuanpenawaranpengadaan/${penawaranId}/update_pengajuan_penawaran_pengadaan/`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/pengajuan_penawaran_pengadaan/${penawaranId}/update_pengajuan_penawaran_pengadaan/`,
         {
           method: "PATCH",
           headers: {
