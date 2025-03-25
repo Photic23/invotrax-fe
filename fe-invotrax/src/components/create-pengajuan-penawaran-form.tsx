@@ -43,73 +43,73 @@ export default function CreatePenawaranPengadaanForm() {
   const [formData, setFormData] = useState({
     
     nama_produk: "",
-    
+    harga_diajukan: "", 
     jumlah_produk: "",
     url_foto_produk: "",
     deskripsi_produk: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/kategori/`, {
-          method: "GET",
-          headers: { 
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
+//   useEffect(() => {
+//     const fetchCategories = async () => {
+//       try {
+//         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/kategori/`, {
+//           method: "GET",
+//           headers: { 
+//             Authorization: `Bearer ${token}`,
+//             "Content-Type": "application/json",
+//           },
+//         });
   
-        if (!response.ok) throw new Error("Gagal mengambil data kategori.");
+//         if (!response.ok) throw new Error("Gagal mengambil data kategori.");
   
-        const categoriesData = await response.json();
-        if (Array.isArray(categoriesData)) {
-          setCategories(categoriesData);
-        }
+//         const categoriesData = await response.json();
+//         if (Array.isArray(categoriesData)) {
+//           setCategories(categoriesData);
+//         }
         
-      } catch (error) {
-        console.error("Error fetching categories:", error);
-        toast({
-          title: "Error",
-          description: "Gagal mengambil data kategori.",
-          variant: "destructive",
-        });
-      }
-    };
+//       } catch (error) {
+//         console.error("Error fetching categories:", error);
+//         toast({
+//           title: "Error",
+//           description: "Gagal mengambil data kategori.",
+//           variant: "destructive",
+//         });
+//       }
+//     };
   
-    const fetchSuppliers = async () => {
-      try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admins/users/?role=vendor`, {
-          method: "GET",
-          headers: { 
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
+//     const fetchSuppliers = async () => {
+//       try {
+//         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admins/users/?role=vendor`, {
+//           method: "GET",
+//           headers: { 
+//             Authorization: `Bearer ${token}`,
+//             "Content-Type": "application/json",
+//           },
+//         });
   
-        if (!response.ok) throw new Error("Gagal mengambil data supplier.");
+//         if (!response.ok) throw new Error("Gagal mengambil data supplier.");
   
-        const suppliersData = await response.json();
-        if (Array.isArray(suppliersData)) {
-          setSuppliers(suppliersData);
-        }
+//         const suppliersData = await response.json();
+//         if (Array.isArray(suppliersData)) {
+//           setSuppliers(suppliersData);
+//         }
         
-      } catch (error) {
-        console.error("Error fetching suppliers:", error);
-        toast({
-          title: "Error",
-          description: "Gagal mengambil data supplier.",
-          variant: "destructive",
-        });
-      }
-    };
+//       } catch (error) {
+//         console.error("Error fetching suppliers:", error);
+//         toast({
+//           title: "Error",
+//           description: "Gagal mengambil data supplier.",
+//           variant: "destructive",
+//         });
+//       }
+//     };
   
-    if (token) {
-      fetchCategories();
-      fetchSuppliers();
-    }
-  }, [toast, token]);  
+//     if (token) {
+//       fetchCategories();
+//       fetchSuppliers();
+//     }
+//   }, [toast, token]);  
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -183,6 +183,7 @@ export default function CreatePenawaranPengadaanForm() {
         jumlah_produk: formData.jumlah_produk ? parseInt(formData.jumlah_produk) : null,
         url_foto_produk: url_foto_produk,
         deskripsi_produk: formData.deskripsi_produk || null,
+        harga_diajukan: formData.harga_diajukan ? parseFloat(formData.harga_diajukan.replace(/,/g, '')) : null,
       };
       
       console.log("Sending payload:", payload);
@@ -388,8 +389,8 @@ export default function CreatePenawaranPengadaanForm() {
           </div>
 
           {/* Harga Diajukan */}
-          {/* <div>
-            <Label htmlFor="harga_diajukan">Harga Diajukan (per unit)</Label>
+           <div>
+            <Label htmlFor="harga_diajukan">Harga Diajukan (Total semua unit)</Label>
             <Input
               id="harga_diajukan"
               name="harga_diajukan"
@@ -403,7 +404,7 @@ export default function CreatePenawaranPengadaanForm() {
             {errors.harga_diajukan && (
               <p className="text-red-500 text-sm mt-1">{errors.harga_diajukan}</p>
             )}
-          </div> */}
+          </div> 
         </CardContent>
 
         <CardFooter>

@@ -24,13 +24,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { DetailPengadaanStatus } from "./elements/detail/Status";
 import { Input } from "./ui/input";
 
-{/* <DetailField namaField="Nama Supplier" isiField="PT.SUPPLYKURSI"/>
-                <DetailField namaField="Nama Produk" isiField="Kursi Kantor"/>
-                <DetailField namaField="Kategori Produk" isiField="PERABOTAN"/>
-                <DetailField namaField="Jumlah Stok" isiField="100"/>
-                <DetailField namaField="Deskripsi Produk" isiField="Kursi Dummy Data"/>
-                <DetailField namaField="URL Foto Produk" isiField="https://photic23.vercel.app/"/> */}
-
 interface PenawaranPengadaan {
   id: number;
   supplier_vendor: { id: number; company_name: string };
@@ -68,7 +61,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
     try {
       setIsLoading(true);
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/penawaran-pengadaan/${pengadaanId}/detail/`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/penawaran-pengadaan/${pengadaanId}/`,
         {
           method: "GET",
           headers: {
@@ -102,7 +95,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
   const handleDeletePengadaan = async () => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/penawaran-pengadaan/produk/${pengadaanId}/delete/`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/penawaran-pengadaan/${pengadaanId}/delete/`,
         {
           method: "DELETE",
           headers: {
@@ -118,7 +111,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
           description: "Request berhasil dihapus",
           variant: "default",
         });
-        router.push("/penawaran-pengadaan"); //TODO: What is this?
+        router.push("/penawaran-pengadaan"); 
       } else {
         const errorData = await response.json();
         toast({
@@ -161,7 +154,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
       };
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/penawaran-pengadaan/${pengadaanId}/detail/`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/penawaran-pengadaan/${pengadaanId}//`,
         {
           method: "PATCH",
           headers: {
@@ -178,7 +171,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
           description: "Pengadaan " + status,
           variant: "default",
         });
-        router.push(`/penawaran-pengadaan/${pengadaanId}/detail`); // Redirect to product detail page
+        router.push(`/penawaran-pengadaan/${pengadaanId}/`); // Redirect to product detail page
       } else {
         const errorData = await response.json();
         toast({
@@ -230,7 +223,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
       }
   
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/penawaran-pengadaan/${pengadaanId}/detail/`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/penawaran-pengadaan/${pengadaanId}/`,
           {
             method: "PATCH",
             headers: {
@@ -247,7 +240,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
             description: "Pengadaan " + newStatus,
             variant: "default",
           });
-          router.push(`/penawaran-pengadaan/${pengadaanId}/detail`); // Redirect to product detail page
+          router.push(`/penawaran-pengadaan/${pengadaanId}/`); // Redirect to product detail page
         } else {
           const errorData = await response.json();
           toast({
@@ -289,8 +282,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
     year: 'numeric'
   });
 
-  //TODO: HOW TO IMPLEMENT SWITCH CASE?
-  const getAdditionalFields = (status: DetailPengadaanStatus) => {
+  const getAdditionalFields = (status: string) => {
     switch (user?.role) {
       case 'vendor':
         switch (status) {
@@ -551,18 +543,19 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
           <Label>URL Foto Produk</Label>
           <p>{pengadaan.url_foto_produk}</p>
         </div>
-        {/* <div>
-          <Label>Harga yang Diajukan (per unit)</Label>
-          <p>Rp {pengadaan.harga_diajukan.toLocaleString()}</p>
-        </div> */}
+        {getAdditionalFields(pengadaan.status)?.field1}
+        {getAdditionalFields(pengadaan.status)?.field2}
+        {getAdditionalFields(pengadaan.status)?.field3}
       </CardContent>
       <CardFooter className="flex justify-between">
-        <Button onClick={() => router.push(`/${pengadaanId}/update`)}>
+        {/* <Button onClick={() => router.push(`/${pengadaanId}/update`)}>
           Ubah Request
         </Button>
         <Button variant="destructive" onClick={() => setConfirmOpen(true)}>
           Cancel Request
-        </Button>
+        </Button> */}
+        {getAdditionalFields(pengadaan.status)?.button1}
+        {getAdditionalFields(pengadaan.status)?.button2}
       </CardFooter>
 
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
