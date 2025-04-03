@@ -553,7 +553,16 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
         </div>
         <div>
           <Label>URL Foto Produk</Label>
-          <p>{pengadaan.url_foto_produk}</p>
+          <p>
+            <a 
+              href={pengadaan.url_foto_produk}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-800 hover:underline break-all"
+            >
+              {pengadaan.url_foto_produk}
+            </a>
+          </p>
         </div>
         {getAdditionalFields(pengadaan.status)?.field1}
         {getAdditionalFields(pengadaan.status)?.field2}

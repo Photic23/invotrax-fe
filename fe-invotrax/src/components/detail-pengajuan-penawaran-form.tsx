@@ -549,7 +549,16 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
             </div>
             <div>
             <Label>URL Foto Produk</Label>
-            <p>{pengajuan.url_foto_produk}</p>
+            <p>
+                <a 
+                    href={pengajuan.url_foto_produk}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-800 hover:underline break-all"
+                >
+                    {pengajuan.url_foto_produk}
+                </a>
+            </p>
             </div>
             {getAdditionalFields(pengajuan.status)?.field1}
             {getAdditionalFields(pengajuan.status)?.field2}
