@@ -317,7 +317,7 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
                                     : ''
                                 }  
                             onChange={handleChange}
-                            placeholder="Masukkan harga produk"
+                            placeholder="Masukkan estimasi tanggal pengiriman produk"
                             min="0"
                             className={errors.harga ? "border-red-500" : ""}
                         />
@@ -522,7 +522,7 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
             <span>Kembali</span>
             </button>
             <CardTitle className="text-2xl font-bold text-center">
-            Request pengajuan Supply {pengajuan.nama_produk}
+            Request Pengajuan {pengajuan.nama_produk}
             </CardTitle>
             <Status status={pengajuan.status}/>
         </CardHeader>

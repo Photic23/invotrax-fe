@@ -321,7 +321,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
                         : ''
                     }                    
                     onChange={handleChange}
-                    placeholder="Masukkan harga produk"
+                    placeholder="Masukkan estimasi tanggal pengiriman produk"
                     min="0"
                     className={errors.harga ? "border-red-500" : ""}
                   />
