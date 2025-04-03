@@ -28,6 +28,7 @@ export default function UpdatePenawaranPengadaanForm({ penawaranId }: UpdatePena
     url_foto_produk: "",
     deskripsi_produk: "",
     harga_diajukan: "",
+    status: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -54,6 +55,7 @@ export default function UpdatePenawaranPengadaanForm({ penawaranId }: UpdatePena
           url_foto_produk: data.url_foto_produk || "",
           deskripsi_produk: data.deskripsi_produk || "",
           harga_diajukan: data.harga_diajukan?.toString() || "",
+          status: data.status || "",
         });
       } catch (error) {
         toast({
@@ -127,6 +129,7 @@ export default function UpdatePenawaranPengadaanForm({ penawaranId }: UpdatePena
         url_foto_produk: formData.url_foto_produk,
         deskripsi_produk: formData.deskripsi_produk,
         harga_diajukan: parseFloat(formData.harga_diajukan.replace(/,/g, '')),
+        status: 'diajukan',
       };
 
       const response = await fetch(

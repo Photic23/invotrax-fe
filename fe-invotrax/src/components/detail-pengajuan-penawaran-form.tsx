@@ -292,11 +292,11 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
             case 'diajukan':
                 return {
                 button1: 
-                    <Button onClick={() => handleUpdateStatus('diproses')}>
+                    <Button onClick={() => handleUpdateStatus('diproses')} disabled={isLoading}>
                     Setujui Request
                     </Button>, 
                 button2: 
-                    <Button onClick={() => handleTolak}>
+                    <Button onClick={handleTolak} disabled={isLoading}>
                     Tolak Request
                     </Button>,
                 field1: 
@@ -330,7 +330,7 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
             case 'diproses':
                 return {
                 button1: 
-                    <Button onClick={() => handleUpdateStatus('dikirim')}>
+                    <Button onClick={() => handleUpdateStatus('dikirim')} disabled={isLoading}>
                     Kirim Pesanan
                     </Button>, 
                 button2: <div></div>,
@@ -409,7 +409,7 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
             case 'diajukan':
             return {
                 button1: 
-                    <Button onClick={() => router.push(`/pengajuan_penawaran_pengadaan/${pengajuanId}/update`)}>
+                    <Button onClick={() => router.push(`/pengajuan_penawaran_pengadaan/${pengajuanId}/update`)} disabled={isLoading}>
                         Ubah Request
                     </Button>, 
                 button2: 
@@ -447,7 +447,7 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
             case 'dikirim':
             return {
                 button1: 
-                    <Button onClick={() => handleUpdateStatus('diterima')}>
+                    <Button onClick={() => handleUpdateStatus('diterima')} disabled={isLoading}>
                         Terima Pesanan
                     </Button>, 
                 button2: <div></div>,
@@ -490,7 +490,7 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
             case 'ditolak':
             return {
                 button1: 
-                    <Button onClick={() => router.push(`/pengajuan_penawaran_pengadaan/${pengajuanId}/update`)}>
+                    <Button onClick={() => router.push(`/pengajuan_penawaran_pengadaan/${pengajuanId}/update`)} disabled={isLoading}>
                         Ubah Request
                     </Button>, 
                 button2: 

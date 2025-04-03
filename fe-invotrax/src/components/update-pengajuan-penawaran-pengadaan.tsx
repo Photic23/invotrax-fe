@@ -30,6 +30,7 @@ export default function EditPenawaranPengadaanForm({ penawaranId }: EditPenawara
     deskripsi_produk: "",
     url_foto_produk: "",
     harga_diajukan: "",
+    status: "",
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -57,6 +58,7 @@ export default function EditPenawaranPengadaanForm({ penawaranId }: EditPenawara
           deskripsi_produk: penawaranData.deskripsi_produk || "",
           url_foto_produk: penawaranData.url_foto_produk || "",
           harga_diajukan: penawaranData.harga_diajukan?.toString() || "",
+          status: penawaranData.status || "",
         });
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -90,7 +92,10 @@ export default function EditPenawaranPengadaanForm({ penawaranId }: EditPenawara
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(formData),
+          body: JSON.stringify({
+            ...formData,
+            status: formData.status === "ditolak" ? "diajukan" : formData.status,
+          }),
         }
       );
 
