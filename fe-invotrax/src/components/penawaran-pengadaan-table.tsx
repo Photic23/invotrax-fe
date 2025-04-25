@@ -109,6 +109,14 @@ export default function PenawaranTable() {
     {
       accessorKey: "nama_produk",
       header: "Nama Produk",
+      cell: ({ row }) => (
+        <a
+          href={`/penawaran-pengadaan/${row.original.id}`}
+          className="hover:underline"
+        >
+          {row.original.nama_produk}
+        </a>
+      ),
     },
     {
       accessorKey: "status",
@@ -155,12 +163,11 @@ export default function PenawaranTable() {
       <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
         <Input
           type="text"
-          placeholder="Cari penawaran pengadaan..."
+          placeholder="Cari penawaran pengadaan berdasarkan nama produk..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="w-full md:w-1/2"
         />
-        <DatePickerWithRange date={date} setDate={setDate} />
         <Select value={selectedStatus} onValueChange={setSelectedStatus}>
           <SelectTrigger className="w-[200px]">
             <SelectValue placeholder="Filter Status" />
@@ -174,6 +181,7 @@ export default function PenawaranTable() {
             ))}
           </SelectContent>
         </Select>
+        <DatePickerWithRange date={date} setDate={setDate} />
       </div>
 
       <Table>

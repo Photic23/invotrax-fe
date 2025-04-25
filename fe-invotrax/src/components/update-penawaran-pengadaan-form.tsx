@@ -6,15 +6,24 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 interface UpdatePenawaranPengadaanFormProps {
   penawaranId: number;
 }
 
-export default function UpdatePenawaranPengadaanForm({ penawaranId }: UpdatePenawaranPengadaanFormProps) {
+export default function UpdatePenawaranPengadaanForm({
+  penawaranId,
+}: UpdatePenawaranPengadaanFormProps) {
   const { getToken } = useAuth();
   const token = getToken();
   const router = useRouter();
@@ -32,6 +41,7 @@ export default function UpdatePenawaranPengadaanForm({ penawaranId }: UpdatePena
   });
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   useEffect(() => {
     const fetchPenawaran = async () => {
@@ -73,7 +83,7 @@ export default function UpdatePenawaranPengadaanForm({ penawaranId }: UpdatePena
     try {
       const parsedUrl = new URL(url);
       return parsedUrl.protocol === "http:" || parsedUrl.protocol === "https:";
-    } catch (error) {
+    } catch {
       return false;
     }
   };
@@ -95,8 +105,11 @@ export default function UpdatePenawaranPengadaanForm({ penawaranId }: UpdatePena
       newErrors.deskripsi_produk = "Deskripsi produk harus diisi";
     }
 
-    if (!formData.harga_diajukan || isNaN(parseFloat(formData.harga_diajukan))) {
+    const harga = parseFloat(formData.harga_diajukan.replace(/,/g, ""));
+    if (!formData.harga_diajukan || isNaN(harga)) {
       newErrors.harga_diajukan = "Harga harus berupa angka";
+    } else if (harga < 0) {
+      newErrors.harga_diajukan = "Harga tidak boleh negatif";
     }
 
     setErrors(newErrors);
@@ -106,21 +119,24 @@ export default function UpdatePenawaranPengadaanForm({ penawaranId }: UpdatePena
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    setErrors((prev) => ({ ...prev, [name]: "" })); 
+    setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!validateForm()) {
+    if (validateForm()) {
+      setShowConfirmModal(true);
+    } else {
       toast({
         title: "Error",
         description: "Harap perbaiki kesalahan pada form",
         variant: "destructive",
       });
-      return;
     }
+  };
 
+  const confirmSubmit = async () => {
+    setShowConfirmModal(false);
     setIsLoading(true);
 
     try {
@@ -128,8 +144,8 @@ export default function UpdatePenawaranPengadaanForm({ penawaranId }: UpdatePena
         jumlah_produk: parseInt(formData.jumlah_produk),
         url_foto_produk: formData.url_foto_produk,
         deskripsi_produk: formData.deskripsi_produk,
-        harga_diajukan: parseFloat(formData.harga_diajukan.replace(/,/g, '')),
-        status: 'diajukan',
+        harga_diajukan: parseFloat(formData.harga_diajukan.replace(/,/g, "")),
+        status: "diajukan",
       };
 
       const response = await fetch(
@@ -157,7 +173,7 @@ export default function UpdatePenawaranPengadaanForm({ penawaranId }: UpdatePena
           variant: "destructive",
         });
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Terjadi kesalahan saat mengupdate penawaran.",
@@ -169,57 +185,67 @@ export default function UpdatePenawaranPengadaanForm({ penawaranId }: UpdatePena
   };
 
   return (
-    <Card className="max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle className="text-2xl font-bold text-center">Update Penawaran Pengadaan</CardTitle>
-      </CardHeader>
-      <form onSubmit={handleSubmit}>
-        <CardContent className="space-y-4">
-          {/* <div>
-            <Label>Nama Supplier</Label>
-            <p className="text-sm mt-1">{formData.nama_supplier}</p>
-          </div> */}
+    <>
+      <Card className="max-w-2xl mx-auto">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold text-center">Update Penawaran Pengadaan</CardTitle>
+        </CardHeader>
+        <form onSubmit={handleSubmit}>
+          <CardContent className="space-y-4">
+            <div>
+              <Label>Nama Produk</Label>
+              <p className="text-sm mt-1">{formData.nama_produk}</p>
+            </div>
 
-          <div>
-            <Label>Nama Produk</Label>
-            <p className="text-sm mt-1">{formData.nama_produk}</p>
-          </div>
+            <div>
+              <Label>Jumlah Produk</Label>
+              <Input name="jumlah_produk" value={formData.jumlah_produk} onChange={handleChange} type="number" />
+              {errors.jumlah_produk && <p className="text-red-500">{errors.jumlah_produk}</p>}
+            </div>
 
-          {/* <div>
-            <Label>Kategori Produk</Label>
-            <p className="text-sm mt-1">{formData.kategori_produk}</p>
-          </div> */}
+            <div>
+              <Label>URL Foto Produk</Label>
+              <Input name="url_foto_produk" value={formData.url_foto_produk} onChange={handleChange} />
+              {errors.url_foto_produk && <p className="text-red-500">{errors.url_foto_produk}</p>}
+            </div>
 
-          <div>
-            <Label>Jumlah Produk</Label>
-            <Input name="jumlah_produk" value={formData.jumlah_produk} onChange={handleChange} type="number" />
-            {errors.jumlah_produk && <p className="text-red-500">{errors.jumlah_produk}</p>}
-          </div>
+            <div>
+              <Label>Deskripsi Produk</Label>
+              <Textarea name="deskripsi_produk" value={formData.deskripsi_produk} onChange={handleChange} />
+              {errors.deskripsi_produk && <p className="text-red-500">{errors.deskripsi_produk}</p>}
+            </div>
 
-          <div>
-            <Label>URL Foto Produk</Label>
-            <Input name="url_foto_produk" value={formData.url_foto_produk} onChange={handleChange} />
-            {errors.url_foto_produk && <p className="text-red-500">{errors.url_foto_produk}</p>}
-          </div>
+            <div>
+              <Label>Harga yang Diajukan (per unit)</Label>
+              <Input name="harga_diajukan" value={formData.harga_diajukan} onChange={handleChange} />
+              {errors.harga_diajukan && <p className="text-red-500">{errors.harga_diajukan}</p>}
+            </div>
+          </CardContent>
+          <CardFooter>
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? "Mengupdate..." : "Update Supply"}
+            </Button>
+          </CardFooter>
+        </form>
+      </Card>
 
-          <div>
-            <Label>Deskripsi Produk</Label>
-            <Textarea name="deskripsi_produk" value={formData.deskripsi_produk} onChange={handleChange} />
-            {errors.deskripsi_produk && <p className="text-red-500">{errors.deskripsi_produk}</p>}
-          </div>
-
-          <div>
-            <Label>Harga yang Diajukan (per unit)</Label>
-            <Input name="harga_diajukan" value={formData.harga_diajukan} onChange={handleChange} />
-            {errors.harga_diajukan && <p className="text-red-500">{errors.harga_diajukan}</p>}
-          </div>
-        </CardContent>
-        <CardFooter>
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Mengupdate..." : "Update Supply"}
-          </Button>
-        </CardFooter>
-      </form>
-    </Card>
+      {/* Confirmation Modal */}
+      <Dialog open={showConfirmModal} onOpenChange={setShowConfirmModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Konfirmasi Update</DialogTitle>
+          </DialogHeader>
+          <p>Apakah Anda yakin ingin memperbarui penawaran ini?</p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowConfirmModal(false)}>
+              Batal
+            </Button>
+            <Button onClick={confirmSubmit} disabled={isLoading}>
+              {isLoading ? "Memproses..." : "Ya, Perbarui"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
