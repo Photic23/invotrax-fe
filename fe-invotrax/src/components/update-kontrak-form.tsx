@@ -5,13 +5,6 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import {
   Card,
@@ -21,11 +14,6 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
-
-interface Penawaran {
-  id: number;
-  kode_transaksi: string;
-}
 
 interface UpdateKontrakFormProps {
   kontrakId: number;
@@ -39,7 +27,6 @@ export default function UpdateKontrakForm({
   const router = useRouter();
   const { toast } = useToast();
 
-  const [penawarans, setPenawarans] = useState<Penawaran[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isInitialLoading, setIsInitialLoading] = useState(true);
@@ -51,41 +38,6 @@ export default function UpdateKontrakForm({
     dokumen_kontrak: null as File | null,
   });
   const [dokumenUrl, setDokumenUrl] = useState<string>("");
-
-  const normalizeList = (data: any) =>
-    Array.isArray(data) ? data : data?.results ?? [];
-
-  const getUsedPenawaranIds = async () => {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/manajemen_kontrak/kontrak/`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    const kontraks = await res.json();
-    return new Set(kontraks.map((k: any) => k.penawaran_detail?.id).filter(Boolean));
-  };
-
-  const fetchPenawarans = async (currentId?: number) => {
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/penawaran/penawaran-pengadaan/`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      const data = normalizeList(await res.json());
-      const usedIds = await getUsedPenawaranIds();
-
-      const available = data.filter(
-        (p: Penawaran) => !usedIds.has(p.id) || p.id === currentId
-      );
-      setPenawarans(available);
-    } catch (err) {
-      console.error("Error fetching penawarans:", err);
-      toast({
-        title: "Error",
-        description: "Gagal mengambil data penawaran",
-        variant: "destructive",
-      });
-    }
-  };
 
   const fetchInitialData = async () => {
     try {
@@ -99,8 +51,6 @@ export default function UpdateKontrakForm({
 
       const currentPenawaranId =
         kontrak.penawaran ?? kontrak.penawaran_detail?.id ?? null;
-
-      await fetchPenawarans(currentPenawaranId);
 
       setFormData({
         penawaran: currentPenawaranId ? currentPenawaranId.toString() : "",
@@ -159,14 +109,6 @@ export default function UpdateKontrakForm({
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
-
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }));
-    }
-  };
-
-  const handleSelectChange = (name: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [name]: value }));
 
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
@@ -258,25 +200,12 @@ export default function UpdateKontrakForm({
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="penawaran">Kode Transaksi</Label>
-            <Select
+            <Label>Kode Transaksi</Label>
+            <Input
               value={formData.penawaran}
-              onValueChange={(val) => handleSelectChange("penawaran", val)}
-            >
-              <SelectTrigger className={errors.penawaran ? "border-red-500" : ""}>
-                <SelectValue placeholder="Pilih kode transaksi" />
-              </SelectTrigger>
-              <SelectContent>
-                {penawarans.map((p) => (
-                  <SelectItem key={p.id} value={p.id.toString()}>
-                    {p.id}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.penawaran && (
-              <p className="text-sm text-red-500">{errors.penawaran}</p>
-            )}
+              readOnly
+              className="cursor-not-allowed bg-gray-100"
+            />
           </div>
 
           <div className="space-y-2">
