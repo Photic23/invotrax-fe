@@ -33,69 +33,20 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Edit, Eye, PlusCircle } from "lucide-react";
+import axios from "axios";
 
 // Define the Exchange interface
 interface Exchange {
-  kode: string;
-  nama: string;
-  owner: string;
+  id: number;
+  nama_produk: string;
+  jumlah_produk: number;
+  deskripsi_produk?: string;
+  alasan_penukaran: string;
   status: number; // 0: diajukan, 1: diproses, 2: ditolak, 3: disetujui, 4: selesai
-  tanggal: string; // date in dd/mm/yyyy format
-}
-
-// Dummy exchange data
-const DUMMY_EXCHANGES: Exchange[] = [
-  {
-    kode: "EX001",
-    nama: "Pertukaran Barang A",
-    owner: "PT Supplier Utama",
-    status: 0, // diajukan
-    tanggal: "25/04/2025"
-  },
-  {
-    kode: "EX002",
-    nama: "Pengadaan Material B",
-    owner: "CV Mitra Sejati",
-    status: 1, // diproses
-    tanggal: "23/04/2025"
-  },
-  {
-    kode: "EX003",
-    nama: "Pembaruan Sistem C",
-    owner: "PT Teknologi Maju",
-    status: 2, // ditolak
-    tanggal: "20/04/2025"
-  },
-  {
-    kode: "EX004",
-    nama: "Kontrak Layanan D",
-    owner: "PT Solusi Bisnis",
-    status: 3, // disetujui
-    tanggal: "18/04/2025"
-  },
-  {
-    kode: "EX005",
-    nama: "Proyek Ekspansi E",
-    owner: "PT Konstruksi Handal",
-    status: 4, // selesai
-    tanggal: "15/04/2025"
-  },
-  {
-    kode: "EX006",
-    nama: "Pengadaan Peralatan F",
-    owner: "CV Pemasok Terpercaya",
-    status: 0, // diajukan
-    tanggal: "12/04/2025"
-  }
-];
-
-// User interface is no longer needed as we're using Exchange
-interface Exchange {
-  kode: string;
-  nama: string;
-  owner: string;
-  status: number; // 0: diajukan, 1: diproses, 2: ditolak, 3: disetujui, 4: selesai
-  tanggal: string; // date in dd/mm/yyyy format
+  tanggal: string; // date in dd/mm/yyyy format from created_at
+  created_by: number; // From API - user ID
+  created_by_username: string; // Username of the creator
+  is_deleted?: boolean;
 }
 
 export default function ExchangesTable() {
@@ -108,21 +59,63 @@ export default function ExchangesTable() {
   const { logout } = useAuth();
   const router = useRouter();
 
-  // Load dummy data instead of fetching from API
-  useEffect(() => {
-    // Simulate API delay
-    const timer = setTimeout(() => {
-      try {
-        setExchanges(DUMMY_EXCHANGES);
-        setFilteredExchanges(DUMMY_EXCHANGES);
-        setLoading(false);
-      } catch (err) {
-        setError("Failed to load dummy data");
-        setLoading(false);
-      }
-    }, 800); // Simulate a small loading delay
+  // Fetch exchanges from API
+  const fetchExchanges = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/exchange-requests/`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      // Transform API data to match our Exchange interface
+      // Map the response data to our Exchange interface
+      const apiExchanges = response.data.map((item: any) => {
+        // Try to get username - it might be nested differently depending on serializer
+        let username = "Unknown";
+        if (typeof item.created_by === 'object' && item.created_by) {
+          username = item.created_by.username || "Unknown";
+        } else if (item.created_by_username) {
+          username = item.created_by_username;
+        } else if (item.created_by_detail && item.created_by_detail.username) {
+          username = item.created_by_detail.username;
+        }
+        
+        return {
+          id: item.id,
+          nama_produk: item.nama_produk || "",
+          jumlah_produk: item.jumlah_produk || 0,
+          deskripsi_produk: item.deskripsi_produk || "",
+          alasan_penukaran: item.alasan_penukaran || "",
+          status: item.status || 0,
+          tanggal: formatDate(item.created_at || new Date()),
+          created_by: typeof item.created_by === 'object' ? item.created_by?.id : item.created_by,
+          created_by_username: username,
+          is_deleted: item.is_deleted
+        };
+      });
+      
+      setExchanges(apiExchanges);
+      setFilteredExchanges(apiExchanges);
+      setLoading(false);
+    } catch (err: any) {
+      console.error("Error fetching exchanges:", err);
+      setError(err.message || "Failed to load exchanges");
+      setLoading(false);
+    }
+  };
 
-    return () => clearTimeout(timer);
+  // Format date from API to dd/mm/yyyy
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
+  };
+
+  // Load data when component mounts
+  useEffect(() => {
+    fetchExchanges();
   }, []);
 
   // Filter exchanges based on nama and status
@@ -131,7 +124,7 @@ export default function ExchangesTable() {
     
     if (namaFilter) {
       result = result.filter(exchange => 
-        exchange.nama.toLowerCase().includes(namaFilter.toLowerCase())
+        exchange.nama_produk.toLowerCase().includes(namaFilter.toLowerCase())
       );
     }
     
@@ -152,28 +145,18 @@ export default function ExchangesTable() {
   ];
 
   // Handle view exchange detail
-  const handleViewExchangeDetail = (kode: string) => {
-    // Since there's no backend, we'll just alert for now
-    // In production, this would navigate to the detail page
-    alert(`View exchange details for kode: ${kode}`);
-    // When backend is ready, uncomment this:
-    // router.push(`../exchanges/detail/${kode}`);
+  const handleViewExchangeDetail = (id: number) => {
+    router.push(`../exchanges/detail/${id}`);
   };
 
   // Handle view exchange update
-  const handleUpdateExchange = (kode: string) => {
-    // Since there's no backend, we'll just alert for now
-    alert(`Update exchange with kode: ${kode}`);
-    // When backend is ready, uncomment this:
-    // router.push(`../exchanges/update/${kode}`);
+  const handleUpdateExchange = (id: number) => {
+    router.push(`../exchanges/update/${id}`);
   };
 
   // Handle add exchange
   const handleAddExchange = () => {
-    // Since there's no backend, we'll just alert for now
-    alert("Add new exchange functionality");
-    // When backend is ready, uncomment this:
-    // router.push('./add');
+    router.push('./add');
   };
   
   // Get status text from status code
@@ -238,10 +221,10 @@ export default function ExchangesTable() {
             <CardContent>
             <div className="flex flex-col gap-4 mb-6 md:flex-row">
                 <div className="flex-1 space-y-2">
-                <Label htmlFor="nama-filter">Filter by Name</Label>
+                <Label htmlFor="nama-filter">Filter by Product Name</Label>
                 <Input
                     id="nama-filter"
-                    placeholder="Search exchange name..."
+                    placeholder="Search product name..."
                     value={namaFilter}
                     onChange={(e) => setNamaFilter(e.target.value)}
                 />
@@ -268,7 +251,7 @@ export default function ExchangesTable() {
             </div>
 
             {loading ? (
-                <div className="text-center py-6">Loading users data...</div>
+                <div className="text-center py-6">Loading exchanges data...</div>
             ) : error ? (
                 <div className="text-center py-6 text-red-500">{error}</div>
             ) : (
@@ -278,9 +261,10 @@ export default function ExchangesTable() {
                 </TableCaption>
                 <TableHeader>
                     <TableRow>
-                    <TableHead>Kode</TableHead>
-                    <TableHead>Nama</TableHead>
-                    <TableHead>Owner</TableHead>
+                    <TableHead>ID</TableHead>
+                    <TableHead>Nama Produk</TableHead>
+                    <TableHead>Jumlah</TableHead>
+                    <TableHead>Requester</TableHead>
                     <TableHead>Tanggal</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
@@ -289,16 +273,17 @@ export default function ExchangesTable() {
                 <TableBody>
                     {filteredExchanges.length === 0 ? (
                     <TableRow>
-                        <TableCell colSpan={6} className="text-center">
+                        <TableCell colSpan={7} className="text-center">
                         No exchanges found matching the filters
                         </TableCell>
                     </TableRow>
                     ) : (
                     filteredExchanges.map((exchange) => (
-                        <TableRow key={exchange.kode}>
-                        <TableCell className="font-medium">{exchange.kode}</TableCell>
-                        <TableCell>{exchange.nama}</TableCell>
-                        <TableCell>{exchange.owner}</TableCell>
+                        <TableRow key={exchange.id}>
+                        <TableCell className="font-medium">{exchange.id}</TableCell>
+                        <TableCell>{exchange.nama_produk}</TableCell>
+                        <TableCell>{exchange.jumlah_produk}</TableCell>
+                        <TableCell>{exchange.created_by_username}</TableCell>
                         <TableCell>{exchange.tanggal}</TableCell>
                         <TableCell>
                             <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getStatusColorClass(exchange.status)}`}>
@@ -309,7 +294,7 @@ export default function ExchangesTable() {
                             <Button 
                             variant="outline" 
                             size="sm" 
-                            onClick={() => handleViewExchangeDetail(exchange.kode)}
+                            onClick={() => handleViewExchangeDetail(exchange.id)}
                             className="mr-2"
                             >
                             <Eye className="w-4 h-4 mr-1" /> 
@@ -318,7 +303,7 @@ export default function ExchangesTable() {
                             <Button 
                             variant="outline" 
                             size="sm" 
-                            onClick={() => handleUpdateExchange(exchange.kode)}
+                            onClick={() => handleUpdateExchange(exchange.id)}
                             >
                             <Edit className="w-4 h-4 mr-1" /> 
                             Update
