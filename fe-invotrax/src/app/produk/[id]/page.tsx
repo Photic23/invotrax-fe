@@ -7,7 +7,7 @@ import ProductDetail from "@/components/product-detail";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 
-export default function ProductPage() {
+export default function DetailProductPage() {
   const params = useParams();
   const productId = parseInt(params.id as string);
   const { logout } = useAuth();
