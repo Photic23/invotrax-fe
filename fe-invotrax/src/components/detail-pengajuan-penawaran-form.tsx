@@ -23,6 +23,7 @@ import { ArrowLeft } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import Status, { DetailPengadaanStatus } from "./elements/detail/Status";
 import { Input } from "./ui/input";
+import WarrantyStatus from "./elements/detail/WarrantyStatus";
 
 interface PengajuanPenawaranPengadaan {
 id: number;
@@ -34,6 +35,8 @@ harga_diajukan: number;
 tanggal_estimasi: Date;
 tanggal_diterima_dikirim: Date;
 status: string;
+status_garansi: string;
+tanggal_garansi: Date;
 }
 
 interface PengajuanPenawaranPengadaanDetailProps {
@@ -109,7 +112,7 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
                 description: "Request berhasil dihapus",
                 variant: "default",
                 });
-                router.push("/pengajuan_penawaran_pengadaan"); 
+                router.push(`/pengajuan_penawaran_pengadaan`); 
             } else {
                 const errorData = await response.json();
                 toast({
@@ -278,6 +281,13 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
         year: 'numeric'
     }) : '-';
 
+    const formattedWarrantyDate = pengajuan.tanggal_garansi
+        ? new Date(pengajuan.tanggal_garansi).toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+    }) : '-';
+
     const formatHarga = (value: string | number) =>
         Number(value).toLocaleString("id-ID", {
             style: "currency",
@@ -291,6 +301,8 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
             switch (status) {
             case 'diajukan':
                 return {
+                status:
+                    <Status status={pengajuan.status}/>,
                 button1: 
                     <Button onClick={() => handleUpdateStatus('diproses')} disabled={isLoading}>
                     Setujui Request
@@ -325,10 +337,13 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
                             <p className="text-sm text-red-500">{errors.harga}</p>
                         )}
                     </div>,
-                field3: <div></div>
+                field3: <div></div>,
+                field4:<div></div>
                 }
             case 'diproses':
                 return {
+                status:
+                    <Status status={pengajuan.status}/>,
                 button1: 
                     <Button onClick={() => handleUpdateStatus('dikirim')} disabled={isLoading}>
                     Kirim Pesanan
@@ -348,10 +363,13 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
                     <div>
                         <Label>Total Harga</Label>
                         <p>{formatHarga(pengajuan.harga_diajukan * pengajuan.jumlah_produk)}</p>
-                    </div>            
+                    </div>,
+                field4:<div></div>            
                 }
             case 'dikirim':
                 return {
+                status:
+                    <Status status={pengajuan.status}/>,
                 button1: <div></div>, 
                 button2: <div></div>,
                 field1: 
@@ -368,12 +386,16 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
                     <div>
                         <Label>Total Harga</Label>
                         <p>{formatHarga(pengajuan.harga_diajukan * pengajuan.jumlah_produk)}</p>     
-                    </div>
+                    </div>,
+                field4:<div></div>
                 }
             case 'diterima':
+                console.log('Warranty Status:', pengajuan.status_garansi);
                 return {
-                button1: <div></div>, 
-                button2: <div></div>,
+                warrantystatus:
+                    <WarrantyStatus warranty_status={pengajuan.status_garansi}/>,
+                status:
+                    <Status status={pengajuan.status}/>,
                 field1: 
                     <div>
                         <Label>Tanggal Produk Diterima</Label>
@@ -388,10 +410,17 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
                     <div>
                         <Label>Total Harga</Label>
                         <p>{formatHarga(pengajuan.harga_diajukan * pengajuan.jumlah_produk)}</p>
+                    </div>,
+                field4:
+                    <div>
+                        <Label>Tanggal Garansi Berakhir</Label>
+                        <p>{formattedWarrantyDate}</p>
                     </div>
                 }
             case 'ditolak':
                 return {
+                status:
+                    <Status status={pengajuan.status}/>,
                 button1: <div></div>, 
                 button2: <div></div>,
                 field1: 
@@ -400,7 +429,8 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
                         <p>{formatHarga(pengajuan.harga_diajukan)}</p>
                     </div>,
                 field2: <div></div>,
-                field3: <div></div>
+                field3: <div></div>,
+                field4:<div></div>
                 }
             }
         case 'customer':
@@ -408,6 +438,8 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
         switch (status) {
             case 'diajukan':
             return {
+                status:
+                    <Status status={pengajuan.status}/>,
                 button1: 
                     <Button onClick={() => router.push(`/pengajuan_penawaran_pengadaan/${pengajuanId}/update`)} disabled={isLoading}>
                         Ubah Request
@@ -422,10 +454,13 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
                         <p>{formatHarga(pengajuan.harga_diajukan)}</p>
                     </div>,
                 field2: <div></div>,
-                field3: <div></div>
+                field3: <div></div>,
+                field4:<div></div>
             }
             case 'diproses':
             return {
+                status:
+                    <Status status={pengajuan.status}/>,
                 button1: <div></div>, 
                 button2: <div></div>, 
                 field1:
@@ -442,10 +477,13 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
                     <div>
                         <Label>Total Harga</Label>
                         <p>{formatHarga(pengajuan.harga_diajukan * pengajuan.jumlah_produk)}</p>
-                    </div>
+                    </div>,
+                field4:<div></div>
             }
             case 'dikirim':
             return {
+                status:
+                    <Status status={pengajuan.status}/>,
                 button1: 
                     <Button onClick={() => handleUpdateStatus('diterima')} disabled={isLoading}>
                         Terima Pesanan
@@ -465,11 +503,33 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
                     <div>
                         <Label>Total Harga</Label>
                         <p>{formatHarga(pengajuan.harga_diajukan * pengajuan.jumlah_produk)}</p>
-                    </div>
+                    </div>,
+                field4:<div></div>
             }
             case 'diterima':
+            const isWarrantyValid = pengajuan.status_garansi === 'Berlaku';
+            console.log('Warranty Status:', pengajuan.status_garansi);
             return {
-                button1: <div></div>, 
+                warrantystatus:
+                    <WarrantyStatus warranty_status={pengajuan.status_garansi}/>,
+                status:
+                    <Status status={pengajuan.status}/>,
+                button1: (
+                    isWarrantyValid ? (
+                        <div className="flex gap-2">
+                            <Button onClick={() => router.push(`/exchange-request/create/${pengajuan.id}`)}>
+                                Create Exchange Request
+                            </Button>
+                            <Button onClick={() => router.push(`/penilaian/create/${pengajuan.id}`)}>
+                                Buat Penilaian
+                            </Button>
+                        </div>
+                    ) : (
+                        <Button onClick={() => router.push(`/penilaian/create/${pengajuan.id}`)}>
+                            Buat Penilaian
+                        </Button>
+                    )
+                ), 
                 button2: <div></div>,
                 field1: 
                     <div>
@@ -485,10 +545,17 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
                     <div>
                         <Label>Total Harga</Label>
                         <p>{formatHarga(pengajuan.harga_diajukan * pengajuan.jumlah_produk)}</p>
+                    </div>,
+                field4:
+                    <div>
+                        <Label>Tanggal Garansi Berakhir</Label>
+                        <p>{formattedWarrantyDate}</p>
                     </div>
             }
             case 'ditolak':
             return {
+                status:
+                    <Status status={pengajuan.status}/>,
                 button1: 
                     <Button onClick={() => router.push(`/pengajuan_penawaran_pengadaan/${pengajuanId}/update`)} disabled={isLoading}>
                         Ubah Request
@@ -503,7 +570,8 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
                         <p>{formatHarga(pengajuan.harga_diajukan)}</p>
                     </div>,
                 field2: <div></div>,
-                field3: <div></div>
+                field3: <div></div>,
+                field4:<div></div>
             }
         }
         default:
@@ -515,7 +583,7 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
         <Card className="max-w-4xl mx-auto">
         <CardHeader className="flex-row justify-between items-center p-4">
             <button
-            onClick={() => router.push("/pengajuan_penawaran_pengadaan")}
+            onClick={() => router.push(`/pengajuan_penawaran_pengadaan`)}
             className="flex items-center text-gray-600 hover:text-blue-800 transition"
             >
             <ArrowLeft className="w-5 h-5 mr-2" />
@@ -524,7 +592,8 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
             <CardTitle className="text-2xl font-bold text-center">
             Request Pengajuan {pengajuan.nama_produk}
             </CardTitle>
-            <Status status={pengajuan.status}/>
+            {getAdditionalFields(pengajuan.status)?.status}
+            {getAdditionalFields(pengajuan.status)?.warrantystatus}
         </CardHeader>
         <CardContent className="space-y-4">
             {/* <div>
@@ -563,6 +632,7 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
             {getAdditionalFields(pengajuan.status)?.field1}
             {getAdditionalFields(pengajuan.status)?.field2}
             {getAdditionalFields(pengajuan.status)?.field3}
+            {getAdditionalFields(pengajuan.status)?.field4}
         </CardContent>
         <CardFooter className="flex justify-between">
             {/* <Button onClick={() => router.push(`/pengajuan_penawaran_pengadaan/${pengajuanId}/update`)}>
