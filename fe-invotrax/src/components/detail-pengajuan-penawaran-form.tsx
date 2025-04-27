@@ -390,7 +390,6 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
                 field4:<div></div>
                 }
             case 'diterima':
-                console.log('Warranty Status:', pengajuan.status_garansi);
                 return {
                 warrantystatus:
                     <WarrantyStatus warranty_status={pengajuan.status_garansi}/>,
@@ -508,7 +507,6 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
             }
             case 'diterima':
             const isWarrantyValid = pengajuan.status_garansi === 'Berlaku';
-            console.log('Warranty Status:', pengajuan.status_garansi);
             return {
                 warrantystatus:
                     <WarrantyStatus warranty_status={pengajuan.status_garansi}/>,
@@ -517,7 +515,7 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
                 button1: (
                     isWarrantyValid ? (
                         <div className="flex gap-2">
-                            <Button onClick={() => router.push(`/exchange-request/create/${pengajuan.id}`)}>
+                            <Button onClick={() => router.push(`/exchange/create/${pengajuan.id}`)}>
                                 Create Exchange Request
                             </Button>
                             <Button onClick={() => router.push(`/penilaian/create/${pengajuan.id}`)}>
