@@ -114,6 +114,11 @@ export default function Navbar() {
             return [
               ...commonFeatures,
               {
+                title: "Kontrak",
+                href: "/kontrak",
+                description: "Manage Contracts, Duration, and Documents."
+              },
+              {
                 title: "My Profile",
                 href: "/customer/profile",
                 description: "View and update your account information."
