@@ -9,7 +9,7 @@ import { useParams } from "next/navigation";
 
 export default function CreateExchangeRequestPage() {
     const params = useParams();
-    const pengajuanId = parseInt(params.id as string);
+    const pengajuanId = parseInt(params.pengajuanId as string);
     const { logout } = useAuth();
     return (
         <ProtectedRoute requiredRole={["staff", "customer"]}>

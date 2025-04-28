@@ -24,14 +24,6 @@ interface Pengajuan {
   deskripsi_produk: string;
 }
 
-// interface ExchangeRequest {
-//   id: number;
-//   pengajuan: number;
-//   pengajuan_detail: Pengajuan;
-//   alasan_penukaran: string;
-//   url_foto_penukaran: string;
-// }
-
 interface CreateExchangeProps {
   pengajuanId: number;
 }
@@ -50,64 +42,31 @@ export default function CreateExchangeRequestForm({ pengajuanId }: CreateExchang
     url_foto_penukaran: "",
   });
 
-  // useEffect(() => { fetchPengajuanDetail();}, [pengajuanId, token, toast]);
-
-  //   async function fetchPengajuanDetail() {
-  //       try {
-  //           setIsLoading(true);
-  //           const response = await fetch(
-  //               `${process.env.NEXT_PUBLIC_API_URL}/api/pengajuan/pengajuan_penawaran_pengadaan/${pengajuanId}/`,
-  //               {
-  //                   method: "GET",
-  //                   headers: {
-  //                       Authorization: `Bearer ${token}`,
-  //                       "Content-Type": "application/json",
-  //                   },
-  //               }
-  //           );
-  //           if (response.ok) {
-  //               const data = await response.json();
-  //               setPengajuan(data);
-  //           } else {
-  //               toast({
-  //                   title: "Error",
-  //                   description: "Gagal mengambil detail pengajuan",
-  //                   variant: "destructive",
-  //               });
-  //           }
-  //       } catch (error) {
-  //           console.error("Error fetching pengajuan detail:", error);
-  //           toast({
-  //               title: "Error",
-  //               description: "Terjadi kesalahan saat mengambil data pengajuan",
-  //               variant: "destructive",
-  //           });
-  //       } finally {
-  //           setIsLoading(false);
-  //       }
-  //   }
-
   useEffect(() => {
     const fetchPengajuan = async () => {
-      try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/pengajuan/pengajuan_penawaran_pengadaan/`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
+      if (!pengajuanId) return;
 
-        if (!response.ok) throw new Error("Gagal mengambil data pengajuan berhubungan.");
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/pengajuan/pengajuan_penawaran_pengadaan/${pengajuanId}/`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!response.ok) throw new Error("Gagal mengambil detail pengajuan.");
 
         const data = await response.json();
-                setPengajuan(data);
-                
+        setPengajuan(data);
       } catch (error) {
-        console.error("Error fetching related pengajuan:", error);
+        console.error("Error fetching pengajuan detail:", error);
         toast({
           title: "Error",
-          description: "Gagal mengambil data pengajuan berhubungan.",
+          description: "Gagal mengambil detail pengajuan.",
           variant: "destructive",
         });
       }
@@ -116,8 +75,9 @@ export default function CreateExchangeRequestForm({ pengajuanId }: CreateExchang
     if (token) {
       fetchPengajuan();
     }
-  }, [toast, token]);  
-
+  }, [pengajuanId, token, toast]);
+  
+  
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -167,13 +127,14 @@ export default function CreateExchangeRequestForm({ pengajuanId }: CreateExchang
       
       // Prepare payload with proper Django-compatible format
       const payload = {
+        pengajuan: pengajuanId,
         alasan_penukaran: formData.alasan_penukaran || null,
         url_foto_penukaran: url_foto_penukaran,
       };
       
       console.log("Sending payload:", payload);
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/layanan_pasca_beli/exchange/`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/layanan_pasca_beli/exchange-request/`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -202,7 +163,7 @@ export default function CreateExchangeRequestForm({ pengajuanId }: CreateExchang
           title: "Sukses",
           description: "Request berhasil diajukan.",
         });
-        router.push("/exchange");
+        router.push("/exchange/list");
       } else {
         // Handle error response
         if (responseData) {
@@ -300,7 +261,7 @@ export default function CreateExchangeRequestForm({ pengajuanId }: CreateExchang
               type="text"
               className={errors.url_foto_penukaran ? "border-red-500" : ""}
             />
-            {errors.url_foto_produk && (
+            {errors.url_foto_penukaran && (
               <p className="text-red-500 text-sm mt-1">{errors.url_foto_penukaran}</p>
             )}
           </div>
