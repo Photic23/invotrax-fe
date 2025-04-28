@@ -15,12 +15,18 @@ import {
 } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 
+interface ExchangeRequest {
+  id: number;
+  alasan_penukaran: string;
+  url_foto_penukaran: string;
+  pengajuan: number;        //foreign ID for related pengajuan
+}
+
 interface Pengajuan {
   id: number;
   nama_produk: string;
   jumlah_produk: string;
-  deskripsi_produk: string;
-}
+  deskripsi_produk: string;}
 
 interface UpdateExchangeProps {
   exchangeId: number;
@@ -36,14 +42,15 @@ export default function UpdateExchangeRequestForm({ exchangeId }: UpdateExchange
     url_foto_penukaran: "",
   });
 
-  const [pengajuan, setPengajuan] = useState<Pengajuan>();  
+  const [pengajuan, setPengajuan] = useState<Pengajuan | null>(null);  
+  const [exchange, setExchange] = useState<ExchangeRequest | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    const fetchPengajuan = async () => {
+    const fetchPengajuanDetail = async (pengajuanId: number) => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/pengajuan/pengajuan_penawaran_pengadaan/`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/pengajuan/pengajuan_penawaran_pengadaan/${pengajuanId}/`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -53,8 +60,9 @@ export default function UpdateExchangeRequestForm({ exchangeId }: UpdateExchange
 
         if (!response.ok) throw new Error("Gagal mengambil data pengajuan berhubungan.");
 
-        const data = await response.json();
-                setPengajuan(data);
+        const pengajuanData = await response.json();
+        console.log("Fetched Pengajuan Detail:", pengajuanData);
+        setPengajuan(pengajuanData);
                 
       } catch (error) {
         console.error("Error fetching related pengajuan:", error);
@@ -69,7 +77,7 @@ export default function UpdateExchangeRequestForm({ exchangeId }: UpdateExchange
     const fetchData = async () => {
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/layanan_pasca_beli/exchange/${exchangeId}/`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/layanan_pasca_beli/exchange-request/${exchangeId}/`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -80,11 +88,19 @@ export default function UpdateExchangeRequestForm({ exchangeId }: UpdateExchange
         }
 
         const exchangeData = await response.json();
+        console.log("Fetched exchangeData:", exchangeData);
+
+        setExchange(exchangeData);
+
+        if (exchangeData.pengajuan) {
+          fetchPengajuanDetail(exchangeData.pengajuan);
+        }
 
         setFormData({
           alasan_penukaran: exchangeData.alasan_penukaran || "",
           url_foto_penukaran: exchangeData.url_foto_penukaran || "",
         });
+
       } catch (error) {
         console.error("Error fetching data:", error);
         toast({
@@ -96,10 +112,9 @@ export default function UpdateExchangeRequestForm({ exchangeId }: UpdateExchange
     };
 
     if (token) {
-      fetchPengajuan();
       fetchData();
     }
-  }, [toast, token]);  
+  }, [exchangeId, toast, token]);  
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -113,7 +128,7 @@ export default function UpdateExchangeRequestForm({ exchangeId }: UpdateExchange
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/layanan_pasca_beli/exchange/${exchangeId}/update_exchange/`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/layanan_pasca_beli/exchange-request/${exchangeId}/update_exchange_request/`,
         {
           method: "PATCH",
           headers: {
@@ -131,7 +146,7 @@ export default function UpdateExchangeRequestForm({ exchangeId }: UpdateExchange
           title: "Sukses",
           description: "Exchange request berhasil diupdate.",
         });
-        router.push("/exchange");
+        router.push("/exchange/list");
       } else {
         const errorData = await response.json();
 
