@@ -35,7 +35,7 @@ export default function PenawaranPengadaanPage() {
             <div>
               <h1 className="text-4xl font-bold mb-2">Daftar Penawaran Pengadaan</h1>
               <p className="text-xl text-muted-foreground max-w-2xl">
-                Daftar penawaran yang telah Anda ajukan. Tekan baris untuk melihat detail penawaran.
+                Daftar penawaran yang telah Anda ajukan. Tekan nama produk untuk melihat detail penawaran.
               </p>
             </div>
 
