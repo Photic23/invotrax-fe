@@ -22,8 +22,23 @@ import {
 } from "@/components/ui/dialog";
 import { ArrowLeft } from "lucide-react";
 
+interface PenawaranDetail {
+  id: number;
+  nama_produk: string;
+  jumlah_produk: number;
+  deskripsi_produk: string;
+  url_foto_produk: string;
+  harga_diajukan: string;
+  status: string;
+  created_at: string;
+  is_deleted: boolean;
+  supplier_vendor: number;
+  kategori_produk: number;
+}
+
 interface Kontrak {
   id: number;
+  penawaran_detail: PenawaranDetail;
   start_date: string;
   end_date: string;
   dokumen_kontrak: string;
@@ -167,7 +182,7 @@ export default function KontrakDetail({ kontrakId }: KontrakDetailProps) {
       <CardContent className="space-y-4">
         <div>
           <Label>Kode Transaksi</Label>
-          <p>{kontrak.id}</p>
+          <p>{kontrak.penawaran_detail.id}</p>
         </div>
         <div>
           <Label>Tanggal Mulai</Label>
