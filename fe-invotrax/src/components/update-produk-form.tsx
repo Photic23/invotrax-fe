@@ -11,6 +11,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import {
   Card,
@@ -25,6 +32,7 @@ import CategoryModal from "./kategori-modal";
 interface Category {
   id: number;
   nama: string;
+  batas_stok_kritis: number;
 }
 
 interface Supplier {
@@ -56,6 +64,7 @@ export default function UpdateProductForm({
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(
     null
   );
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const [formData, setFormData] = useState({
     nama: "",
@@ -254,6 +263,11 @@ export default function UpdateProductForm({
       return;
     }
 
+    // Show confirmation modal instead of submitting directly
+    setShowConfirmModal(true);
+  };
+
+  const confirmSubmit = async () => {
     setIsLoading(true);
 
     try {
@@ -303,6 +317,7 @@ export default function UpdateProductForm({
       });
     } finally {
       setIsLoading(false);
+      setShowConfirmModal(false);
     }
   };
 
@@ -462,11 +477,32 @@ export default function UpdateProductForm({
         </CardContent>
 
         <CardFooter>
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Menyimpan..." : "Ubah Produk"}
+          <Button type="submit" className="w-full">
+            Ubah Produk
           </Button>
         </CardFooter>
       </form>
+
+      {/* Confirmation Modal */}
+      <Dialog open={showConfirmModal} onOpenChange={setShowConfirmModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Konfirmasi Update</DialogTitle>
+          </DialogHeader>
+          <p>Apakah Anda yakin ingin memperbarui produk ini?</p>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowConfirmModal(false)}
+            >
+              Batal
+            </Button>
+            <Button onClick={confirmSubmit} disabled={isLoading}>
+              {isLoading ? "Menyimpan..." : "Ya, Perbarui"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

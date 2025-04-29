@@ -5,6 +5,13 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import {
   Card,
@@ -30,6 +37,7 @@ export default function UpdateKontrakForm({
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const [formData, setFormData] = useState({
     penawaran: "",
@@ -45,7 +53,9 @@ export default function UpdateKontrakForm({
 
       const kontrakRes = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/manajemen_kontrak/kontrak/${kontrakId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
       );
       const kontrak = await kontrakRes.json();
 
@@ -115,17 +125,17 @@ export default function UpdateKontrakForm({
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!validateForm()) {
       return;
     }
 
-    if (!window.confirm("Apakah Anda yakin ingin mengubah kontrak?")) {
-      return;
-    }
+    setShowConfirmModal(true);
+  };
 
+  const confirmSubmit = async () => {
     setIsLoading(true);
 
     try {
@@ -171,6 +181,7 @@ export default function UpdateKontrakForm({
       });
     } finally {
       setIsLoading(false);
+      setShowConfirmModal(false);
     }
   };
 
@@ -186,7 +197,7 @@ export default function UpdateKontrakForm({
     <Card className="max-w-2xl mx-auto">
       <CardHeader className="relative">
         <button
-          onClick={() => router.push("/kontrak")}
+          onClick={() => router.push(`/kontrak/${kontrakId}`)}
           className="absolute left-4 top-4 flex items-center text-black-600 hover:text-blue-800 transition"
         >
           <ArrowLeft className="w-5 h-5 mr-2" />
@@ -245,7 +256,8 @@ export default function UpdateKontrakForm({
               <Input
                 value={
                   formData.dokumen_kontrak?.name ||
-                  dokumenUrl.split("/").pop() || ""
+                  dokumenUrl.split("/").pop() ||
+                  ""
                 }
                 readOnly
                 className="flex-[3]"
@@ -262,14 +274,22 @@ export default function UpdateKontrakForm({
 
               {dokumenUrl && (
                 <Button variant="outline" asChild className="flex-[1]">
-                  <a href={dokumenUrl} target="_blank" rel="noopener noreferrer" className="w-full text-center">
+                  <a
+                    href={dokumenUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full text-center"
+                  >
                     Open File
                   </a>
                 </Button>
               )}
 
               <Button asChild className="flex-[1]">
-                <label htmlFor="dokumen_kontrak" className="w-full cursor-pointer text-center">
+                <label
+                  htmlFor="dokumen_kontrak"
+                  className="w-full cursor-pointer text-center"
+                >
                   Choose File
                 </label>
               </Button>
@@ -287,6 +307,26 @@ export default function UpdateKontrakForm({
           </Button>
         </CardFooter>
       </form>
+
+      <Dialog open={showConfirmModal} onOpenChange={setShowConfirmModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Konfirmasi Update</DialogTitle>
+          </DialogHeader>
+          <p>Apakah Anda yakin ingin memperbarui kontrak ini?</p>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowConfirmModal(false)}
+            >
+              Batal
+            </Button>
+            <Button onClick={confirmSubmit} disabled={isLoading}>
+              {isLoading ? "Menyimpan..." : "Ya, Perbarui"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
