@@ -222,33 +222,61 @@ export default function ExchangeRequestDetail({
         </div>
       </CardContent>
 
-      <CardFooter className="flex justify-between">
-        {user?.role === "customer" ? (
-          <>
-            <Button onClick={() => router.push(`/exchange/${exchangeId}/update`)}>
-              Update Exchange
+      <CardFooter className="flex flex-wrap gap-2 justify-between">
+    {user?.role === "customer" ? (
+        <>
+        {exchangeRequest.status === "dikirim" && (
+            <Button onClick={() => handleUpdateStatus("diterima")}>
+            Diterima
             </Button>
-            <Button variant="destructive" onClick={handleDeleteExchange}>
-              Hapus Exchange
-            </Button>
-          </>
-        ) : (
-          <>
-            {exchangeRequest.status === "diajukan" && (
-              <>
-                <Button onClick={() => handleUpdateStatus("diproses")}>Setujui Exchange</Button>
-                <Button variant="destructive" onClick={() => setConfirmOpen(true)}>
-                  Tolak Exchange
-                </Button>
-              </>
-            )}
-
-            {exchangeRequest.status === "diproses" && (
-              <Button onClick={() => handleUpdateStatus("dikirim")}>Kirim Exchange</Button>
-            )}
-          </>
         )}
-      </CardFooter>
+
+        {exchangeRequest.status === "diterima" && (
+            <Button onClick={() => router.push(`/review/create?exchangeId=${exchangeId}`)}>
+            Buat Penilaian
+            </Button>
+        )}
+
+        {exchangeRequest.status === "ditolak" && (
+            <Button variant="destructive" onClick={handleDeleteExchange}>
+            Hapus Exchange
+            </Button>
+        )}
+
+        {exchangeRequest.status !== "diterima" &&
+            exchangeRequest.status !== "dikirim" &&
+            exchangeRequest.status !== "ditolak" && (
+            <>
+                <Button onClick={() => router.push(`/exchange/${exchangeId}/update`)}>
+                Update Exchange
+                </Button>
+                <Button variant="destructive" onClick={handleDeleteExchange}>
+                Hapus Exchange
+                </Button>
+            </>
+            )}
+        </>
+    ) : (
+        <>
+        {exchangeRequest.status === "diajukan" && (
+            <>
+            <Button onClick={() => handleUpdateStatus("diproses")}>
+                Setujui Exchange
+            </Button>
+            <Button variant="destructive" onClick={() => setConfirmOpen(true)}>
+                Tolak Exchange
+            </Button>
+            </>
+        )}
+        {exchangeRequest.status === "diproses" && (
+            <Button onClick={() => handleUpdateStatus("dikirim")}>
+            Kirim Exchange
+            </Button>
+        )}
+        </>
+    )}
+    </CardFooter>
+
 
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <DialogContent className="sm:max-w-md">
