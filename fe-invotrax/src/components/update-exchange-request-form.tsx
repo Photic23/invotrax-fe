@@ -155,7 +155,7 @@ export default function UpdateExchangeRequestForm({ exchangeId }: UpdateExchange
       // If it's not a URL, make it null so Django accepts it as text
       url_foto_penukaran = "";
     }
-    
+
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/layanan_pasca_beli/exchange-request/${exchangeId}/update_exchange_request/`,
@@ -212,7 +212,9 @@ export default function UpdateExchangeRequestForm({ exchangeId }: UpdateExchange
   return (
     <Card className="max-w-2xl mx-auto">
       <CardHeader>
-        <CardTitle>Edit Exchange Request EXC-{exchangeId}</CardTitle>
+        <CardTitle className="text-2xl font-bold text-center">
+          Update Exchange Request EXC-{exchangeId}
+        </CardTitle>
       </CardHeader>
       <form onSubmit={(e) => {
         e.preventDefault();
@@ -270,6 +272,9 @@ export default function UpdateExchangeRequestForm({ exchangeId }: UpdateExchange
                 onChange={handleChange}
                 className={errors.url_foto_penukaran ? "border-red-500" : ""}
               />
+              <p className="ml-0.5 text-gray-500 text-xs mt-1">
+                Masukkan url untuk foto bukti produk yang akan ditukar
+              </p>
               {errors.url_foto_penukaran && (
                 <p className="text-red-500 text-sm mt-1">{errors.url_foto_penukaran}</p>
               )}
@@ -288,21 +293,21 @@ export default function UpdateExchangeRequestForm({ exchangeId }: UpdateExchange
       </form>
 
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-            <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-                <DialogTitle>Konfirmasi Update</DialogTitle>
-            </DialogHeader>
-            <p className="mb-4">Apakah Anda yakin ingin mengubah request ini?</p>
-            <DialogFooter>
-                <Button variant="outline" onClick={() => setConfirmOpen(false)}>
-                Batal
-                </Button>
-                <Button variant="secondary" onClick={handleSubmit}>
-                Ubah
-                </Button>
-            </DialogFooter>
-            </DialogContent>
-        </Dialog>
+          <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+              <DialogTitle>Konfirmasi Update</DialogTitle>
+          </DialogHeader>
+          <p className="mb-4">Apakah Anda yakin ingin mengubah request ini?</p>
+          <DialogFooter>
+              <Button variant="outline" onClick={() => setConfirmOpen(false)}>
+              Batal
+              </Button>
+              <Button onClick={handleSubmit}>
+              Ubah
+              </Button>
+          </DialogFooter>
+          </DialogContent>
+      </Dialog>
 
     </Card>
   );

@@ -514,7 +514,7 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
                     <Status status={pengajuan.status}/>,
                 button1: (
                     isWarrantyValid ? (
-                        <div className="flex gap-2">
+                        <div className="flex gap-4 mt-1.5">
                             <Button onClick={() => router.push(`/exchange/create/${pengajuan.id}`)}>
                                 Create Exchange Request
                             </Button>
@@ -579,7 +579,7 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
 
     return (
         <Card className="max-w-4xl mx-auto">
-        <CardHeader className="flex-row justify-between items-center p-4">
+        <CardHeader className="flex-row justify-between items-center mx-2 my-2">
             <button
             onClick={() => router.push(`/pengajuan_penawaran_pengadaan`)}
             className="flex items-center text-gray-600 hover:text-blue-800 transition"
@@ -590,22 +590,16 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
             <CardTitle className="text-2xl font-bold text-center">
             Request Pengajuan {pengajuan.nama_produk}
             </CardTitle>
-            {getAdditionalFields(pengajuan.status)?.status}
-            {getAdditionalFields(pengajuan.status)?.warrantystatus}
+            <div className="pr-1 flex flex-row space-x-4">
+                {getAdditionalFields(pengajuan.status)?.status}
+                {getAdditionalFields(pengajuan.status)?.warrantystatus}
+            </div>
         </CardHeader>
-        <CardContent className="space-y-4">
-            {/* <div>
-            <Label>Nama Perusahaan</Label>
-            <p>{pengajuan.nama_produk}</p>
-            </div> */}
+        <CardContent className="space-y-4 mx-2">
             <div>
             <Label>Nama Produk</Label>
             <p>{pengajuan.nama_produk}</p>
             </div>
-            {/* <div>
-            <Label>Kategori Produk</Label>
-            <p>{pengajuan.kategori_produk.nama}</p>
-            </div> */}
             <div>
             <Label>Jumlah Stok</Label>
             <p>{pengajuan.jumlah_produk}</p>
@@ -632,13 +626,7 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
             {getAdditionalFields(pengajuan.status)?.field3}
             {getAdditionalFields(pengajuan.status)?.field4}
         </CardContent>
-        <CardFooter className="flex justify-between">
-            {/* <Button onClick={() => router.push(`/pengajuan_penawaran_pengadaan/${pengajuanId}/update`)}>
-            Ubah Request
-            </Button>
-            <Button variant="destructive" onClick={() => setConfirmOpen(true)}>
-            Cancel Request
-            </Button> */}
+        <CardFooter className="flex mx-2 gap-4 mb-5">
             {getAdditionalFields(pengajuan.status)?.button1}
             {getAdditionalFields(pengajuan.status)?.button2}
         </CardFooter>

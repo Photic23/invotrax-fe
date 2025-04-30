@@ -261,19 +261,22 @@ export default function CreateExchangeRequestForm({ pengajuanId }: CreateExchang
               name="url_foto_penukaran"
               value={formData.url_foto_penukaran}
               onChange={handleChange}
-              placeholder="Masukkan URL Foto Bukti Produk Untuk Ditukarkan"
+              placeholder="Masukkan Foto Bukti Produk"
               type="text"
               className={errors.url_foto_penukaran ? "border-red-500" : ""}
             />
+            <p className="ml-0.5 text-gray-500 text-xs mt-1">
+              Masukkan url untuk foto bukti produk yang akan ditukar
+            </p>
             {errors.url_foto_penukaran && (
               <p className="text-red-500 text-sm mt-1">{errors.url_foto_penukaran}</p>
             )}
           </div>
         </CardContent>
 
-        <CardFooter>
+        <CardFooter className="flex gap-4 mt-2 mb-5">
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Mengajukan..." : "Ajukan Penukaran"}
+            {isLoading ? "Mengajukan..." : "Ajukan Exchange"}
           </Button>
         </CardFooter>
       </form>

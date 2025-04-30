@@ -517,7 +517,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
 
   return (
     <Card className="max-w-4xl mx-auto">
-      <CardHeader className="flex-row justify-between items-center p-4">
+      <CardHeader className="flex-row justify-between items-center mx-2 my-2">
         <button
           onClick={() => router.push("/penawaran-pengadaan")}
           className="flex items-center text-gray-600 hover:text-blue-800 transition"
@@ -530,7 +530,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
         </CardTitle>
         <Status status={pengadaan.status}/>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 mx-2">
         <div>
           <Label>Nama Supplier</Label>
           <p>{pengadaan.supplier_vendor.company_name}</p>
@@ -568,13 +568,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
         {getAdditionalFields(pengadaan.status)?.field2}
         {getAdditionalFields(pengadaan.status)?.field3}
       </CardContent>
-      <CardFooter className="flex justify-between">
-        {/* <Button onClick={() => router.push(`/penawaran-pengadaan/${pengadaanId}/update`)}>
-          Ubah Request
-        </Button>
-        <Button variant="destructive" onClick={() => setConfirmOpen(true)}>
-          Cancel Request
-        </Button> */}
+      <CardFooter className="flex mx-2 gap-4 mb-5">
         {getAdditionalFields(pengadaan.status)?.button1}
         {getAdditionalFields(pengadaan.status)?.button2}
       </CardFooter>
