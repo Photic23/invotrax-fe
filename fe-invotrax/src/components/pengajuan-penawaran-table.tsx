@@ -109,7 +109,9 @@ export default function PengajuanPenawaranTable() {
           </thead>
           <tbody>
             {filteredPenawaran.map((row) => (
-              <tr key={row.id}>
+              <tr key={row.id}
+              onClick={() => router.push(`/pengajuan_penawaran_pengadaan/${row.id}`)}
+              className="cursor-pointer hover:bg-gray-100">
                 <td className="border-b p-2">{`PROD-${row.id}`}</td>
                 <td className="border-b p-2">{row.nama_produk}</td>
                 <td className="border-b p-2">{row.status}</td>
