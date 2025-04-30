@@ -98,6 +98,10 @@ export default function CreateExchangeRequestForm({ pengajuanId }: CreateExchang
     if (!formData.alasan_penukaran) {
       newErrors.alasan_penukaran = "Alasan penukaran harus diisi";
     }
+
+    if (!formData.url_foto_penukaran) {
+      newErrors.url_foto_penukaran = "Foto bukti produk yang akan ditukar harus diisi";
+    }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -251,13 +255,13 @@ export default function CreateExchangeRequestForm({ pengajuanId }: CreateExchang
 
           {/* URL Foto Penukaran - changed to text input */}
           <div>
-            <Label htmlFor="url_foto_penukaran">URL Foto Produk Untuk Ditukar (Text)</Label>
+            <Label htmlFor="url_foto_penukaran">Foto Bukti Produk Untuk Ditukar (Text)</Label>
             <Input
               id="url_foto_penukaran"
               name="url_foto_penukaran"
               value={formData.url_foto_penukaran}
               onChange={handleChange}
-              placeholder="Masukkan Text Foto Produk Yang Perlu Ditukarkan"
+              placeholder="Masukkan URL Foto Bukti Produk Untuk Ditukarkan"
               type="text"
               className={errors.url_foto_penukaran ? "border-red-500" : ""}
             />

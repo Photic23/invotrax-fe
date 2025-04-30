@@ -13,6 +13,13 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  } from "@/components/ui/dialog";  
 import { useToast } from "@/hooks/use-toast";
 
 interface ExchangeRequest {
@@ -36,7 +43,7 @@ export default function UpdateExchangeRequestForm({ exchangeId }: UpdateExchange
   const token = localStorage.getItem("token");
   const router = useRouter();
   const { toast } = useToast();
-
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [formData, setFormData] = useState({
     alasan_penukaran: "",
     url_foto_penukaran: "",
@@ -44,6 +51,7 @@ export default function UpdateExchangeRequestForm({ exchangeId }: UpdateExchange
 
   const [pengajuan, setPengajuan] = useState<Pengajuan | null>(null);  
   const [exchange, setExchange] = useState<ExchangeRequest | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -121,11 +129,33 @@ export default function UpdateExchangeRequestForm({ exchangeId }: UpdateExchange
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    
+    if (!formData.alasan_penukaran) {
+      newErrors.alasan_penukaran = "Alasan penukaran harus diisi";
+    }
+
+    if (!formData.url_foto_penukaran) {
+      newErrors.url_foto_penukaran = "Foto bukti produk yang akan ditukar harus diisi";
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setErrorMessage("");
 
+    // Make sure the URL is valid by prefixing with https:// if needed
+    let url_foto_penukaran = formData.url_foto_penukaran;
+    if (url_foto_penukaran && !url_foto_penukaran.match(/^https?:\/\//)) {
+      // If it's not a URL, make it null so Django accepts it as text
+      url_foto_penukaran = "";
+    }
+    
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/layanan_pasca_beli/exchange-request/${exchangeId}/update_exchange_request/`,
@@ -141,6 +171,8 @@ export default function UpdateExchangeRequestForm({ exchangeId }: UpdateExchange
         }
       );
 
+      const responseData = await response.json();
+
       if (response.ok) {
         toast({
           title: "Sukses",
@@ -148,28 +180,32 @@ export default function UpdateExchangeRequestForm({ exchangeId }: UpdateExchange
         });
         router.push("/exchange/list");
       } else {
-        const errorData = await response.json();
-
-        if (response.status === 405) {
-          setErrorMessage("Metode tidak diizinkan. Cek apakah API endpoint mendukung PATCH.");
-        } else if (response.status === 400) {
-          setErrorMessage("Gagal memperbarui data. Cek kembali input Anda.");
-        } else {
-          setErrorMessage("Terjadi kesalahan saat memperbarui exchange request.");
+        if (response.status === 400 && responseData) {
+          if (responseData.alasan_penukaran) {
+            setErrors(prev => ({...prev, alasan_penukaran: responseData.alasan_penukaran[0]}));
+          }
+          if (responseData.url_foto_penukaran) {
+            setErrors(prev => ({...prev, url_foto_penukaran: responseData.url_foto_penukaran[0]}));
+          }
         }
 
-        console.error("API Error:", errorData);
+        const fallbackMessage = responseData.detail || "Terjadi kesalahan saat memperbarui exchange request.";
         toast({
           title: "Error",
-          description: errorMessage,
+          description: fallbackMessage,
           variant: "destructive",
         });
       }
     } catch (error) {
       console.error("Request Error:", error);
-      setErrorMessage("Terjadi kesalahan pada koneksi atau server.");
+      toast({
+        title: "Error",
+        description: "Terjadi kesalahan pada koneksi atau server.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
+      setConfirmOpen(false);
     }
   };
 
@@ -178,7 +214,18 @@ export default function UpdateExchangeRequestForm({ exchangeId }: UpdateExchange
       <CardHeader>
         <CardTitle>Edit Exchange Request EXC-{exchangeId}</CardTitle>
       </CardHeader>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={(e) => {
+        e.preventDefault();
+        if (!validateForm()) {
+          toast({
+            title: "Error",
+            description: "Harap perbaiki kesalahan pada form",
+            variant: "destructive",
+          });
+          return;
+        }
+        setConfirmOpen(true);
+      }}>
         <CardContent>
           <div className="space-y-4">
             {/* Nama Produk */}
@@ -206,7 +253,11 @@ export default function UpdateExchangeRequestForm({ exchangeId }: UpdateExchange
                 name="alasan_penukaran"
                 value={formData.alasan_penukaran}
                 onChange={handleChange}
+                className={errors.alasan_penukaran ? "border-red-500" : ""}
               />
+              {errors.alasan_penukaran && (
+                <p className="text-red-500 text-sm mt-1">{errors.alasan_penukaran}</p>
+              )}
             </div>
 
           {/* URL Foto Penukaran */}
@@ -217,7 +268,11 @@ export default function UpdateExchangeRequestForm({ exchangeId }: UpdateExchange
                 name="url_foto_penukaran"
                 value={formData.url_foto_penukaran}
                 onChange={handleChange}
+                className={errors.url_foto_penukaran ? "border-red-500" : ""}
               />
+              {errors.url_foto_penukaran && (
+                <p className="text-red-500 text-sm mt-1">{errors.url_foto_penukaran}</p>
+              )}
             </div>
 
             {errorMessage && (
@@ -231,6 +286,24 @@ export default function UpdateExchangeRequestForm({ exchangeId }: UpdateExchange
           </Button>
         </CardFooter>
       </form>
+
+      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+            <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+                <DialogTitle>Konfirmasi Update</DialogTitle>
+            </DialogHeader>
+            <p className="mb-4">Apakah Anda yakin ingin mengubah request ini?</p>
+            <DialogFooter>
+                <Button variant="outline" onClick={() => setConfirmOpen(false)}>
+                Batal
+                </Button>
+                <Button variant="secondary" onClick={handleSubmit}>
+                Ubah
+                </Button>
+            </DialogFooter>
+            </DialogContent>
+        </Dialog>
+
     </Card>
   );
 }
