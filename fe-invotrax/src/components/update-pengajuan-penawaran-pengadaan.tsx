@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import ModalUpdatePengajuanPenawaran from "@/components/modal-update-pengajuan-penawaran-pengadaan";
+
 import {
   Card,
   CardHeader,
@@ -35,6 +37,7 @@ export default function EditPenawaranPengadaanForm({ penawaranId }: EditPenawara
 
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [showModal, setShowModal] = useState(false); // State to control modal visibility
 
   useEffect(() => {
     const fetchData = async () => {
@@ -193,11 +196,22 @@ export default function EditPenawaranPengadaanForm({ penawaranId }: EditPenawara
           </div>
         </CardContent>
         <CardFooter>
-          <Button type="submit" disabled={isLoading}>
+          <Button type="button" onClick={() => setShowModal(true)} disabled={isLoading}>
             {isLoading ? "Mengupdate..." : "Update Penawaran"}
           </Button>
         </CardFooter>
       </form>
+
+      {/* Modal */}
+      <ModalUpdatePengajuanPenawaran
+        open={showModal}
+        onClose={() => setShowModal(false)}
+        onConfirm={async () => {
+          setShowModal(false);
+          await handleSubmit(new Event("submit") as unknown as React.FormEvent);
+        }}
+        id={penawaranId}
+      />
     </Card>
   );
 }

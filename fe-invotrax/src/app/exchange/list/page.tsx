@@ -64,7 +64,7 @@ export default function ExchangesTable() {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/exchange-requests/`, {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/exchange-request/`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
