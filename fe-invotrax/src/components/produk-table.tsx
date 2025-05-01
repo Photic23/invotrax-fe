@@ -57,6 +57,7 @@ interface Product {
 interface Category {
   id: number;
   nama: string;
+  batas_stok_kritis: number;
 }
 
 interface Supplier {
@@ -99,8 +100,8 @@ export default function ProductTable() {
   // New state for categories and suppliers
   const [categories, setCategories] = useState<Category[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
-  const [selectedSupplier, setSelectedSupplier] = useState<number | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(0);
+  const [selectedSupplier, setSelectedSupplier] = useState<number | null>(0);
   const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
@@ -109,6 +110,20 @@ export default function ProductTable() {
       setLoading(true);
 
       try {
+        // Fetch categories first to get batas_stok_kritis values
+        const categoriesResponse = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/manajemen_stok/kategori/`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        const categoriesData = await categoriesResponse.json();
+        setCategories(categoriesData);
+
         // Fetch products
         const productsResponse = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/api/manajemen_stok/produk/`,
@@ -124,27 +139,20 @@ export default function ProductTable() {
         setProducts(productsData);
         setFilteredProducts(productsData);
 
-        const lowStock = productsData.filter(
-          (product: Product) => product.stok < 5
-        );
+        // Check for low stock products based on each category's batas_stok_kritis
+        const lowStock = productsData.filter((product: Product) => {
+          const category = categoriesData.find(
+            (cat: Category) => cat.id === product.kategori_detail?.id
+          );
+
+          if (!category) return false;
+          return product.stok <= category.batas_stok_kritis;
+        });
+
         setLowStockProducts(lowStock);
         if (lowStock.length > 0) {
           setShowAlert(true);
         }
-
-        // Fetch categories
-        const categoriesResponse = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/manajemen_stok/kategori/`,
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        const categoriesData = await categoriesResponse.json();
-        setCategories(categoriesData);
 
         // Fetch suppliers
         const suppliersResponse = await fetch(
@@ -169,6 +177,25 @@ export default function ProductTable() {
     fetchData();
   }, [token]);
 
+  // Also need to update the lowStockProducts when products or categories change
+  useEffect(() => {
+    if (products.length > 0 && categories.length > 0) {
+      const lowStock = products.filter((product) => {
+        const category = categories.find(
+          (cat) => cat.id === product.kategori_detail?.id
+        );
+
+        if (!category) return false;
+        return product.stok <= category.batas_stok_kritis;
+      });
+
+      setLowStockProducts(lowStock);
+      if (lowStock.length > 0) {
+        setShowAlert(true);
+      }
+    }
+  }, [products, categories]);
+
   // Apply filters when search, category, or supplier changes
   useEffect(() => {
     let filtered = [...products];
@@ -181,14 +208,14 @@ export default function ProductTable() {
     }
 
     // Apply category filter
-    if (selectedCategory !== null) {
+    if (selectedCategory !== 0) {
       filtered = filtered.filter(
         (product) => product.kategori_detail?.id === selectedCategory
       );
     }
 
     // Apply supplier filter
-    if (selectedSupplier !== null) {
+    if (selectedSupplier !== 0) {
       filtered = filtered.filter(
         (product) => product.vendor_detail?.id === selectedSupplier
       );
@@ -200,8 +227,8 @@ export default function ProductTable() {
   }, [searchName, selectedCategory, selectedSupplier, products]);
 
   const clearFilters = () => {
-    setSelectedCategory(null);
-    setSelectedSupplier(null);
+    setSelectedCategory(0);
+    setSelectedSupplier(0);
   };
 
   const handleUpdateStock = (productId: number, newStock: number) => {
@@ -343,10 +370,10 @@ export default function ProductTable() {
               <Button variant="outline" className="flex items-center gap-2">
                 <Filter className="h-4 w-4" />
                 Filter
-                {(selectedCategory !== null || selectedSupplier !== null) && (
+                {(selectedCategory !== 0 || selectedSupplier !== 0) && (
                   <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs text-white">
-                    {(selectedCategory !== null ? 1 : 0) +
-                      (selectedSupplier !== null ? 1 : 0)}
+                    {(selectedCategory !== 0 ? 1 : 0) +
+                      (selectedSupplier !== 0 ? 1 : 0)}
                   </span>
                 )}
               </Button>
@@ -358,7 +385,7 @@ export default function ProductTable() {
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Kategori</label>
                   <Select
-                    value={selectedCategory?.toString() || ""}
+                    value={selectedCategory?.toString() || "0"}
                     onValueChange={(value) =>
                       setSelectedCategory(value ? parseInt(value) : null)
                     }
@@ -367,7 +394,7 @@ export default function ProductTable() {
                       <SelectValue placeholder="Semua kategori" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Semua kategori</SelectItem>
+                      <SelectItem value="0">Semua kategori</SelectItem>
                       {categories.map((category) => (
                         <SelectItem
                           key={category.id}
@@ -383,7 +410,7 @@ export default function ProductTable() {
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Supplier</label>
                   <Select
-                    value={selectedSupplier?.toString() || ""}
+                    value={selectedSupplier?.toString() || "0"}
                     onValueChange={(value) =>
                       setSelectedSupplier(value ? parseInt(value) : null)
                     }
@@ -392,7 +419,7 @@ export default function ProductTable() {
                       <SelectValue placeholder="Semua supplier" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Semua supplier</SelectItem>
+                      <SelectItem value="0">Semua supplier</SelectItem>
                       {suppliers.map((supplier) => (
                         <SelectItem
                           key={supplier.id}
@@ -409,9 +436,6 @@ export default function ProductTable() {
                   <Button variant="outline" size="sm" onClick={clearFilters}>
                     Reset
                   </Button>
-                  <Button size="sm" onClick={() => setShowFilters(false)}>
-                    Terapkan
-                  </Button>
                 </div>
               </div>
             </PopoverContent>
@@ -424,11 +448,11 @@ export default function ProductTable() {
       </div>
 
       {/* Active Filters Display */}
-      {(selectedCategory !== null || selectedSupplier !== null) && (
+      {(selectedCategory !== 0 || selectedSupplier !== 0) && (
         <div className="flex flex-wrap items-center gap-2 mb-4">
           <span className="text-sm text-gray-500">Filter aktif:</span>
 
-          {selectedCategory !== null && (
+          {selectedCategory !== 0 && (
             <div className="flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 text-sm">
               <span>
                 Kategori:{" "}
@@ -438,14 +462,14 @@ export default function ProductTable() {
                 variant="ghost"
                 size="icon"
                 className="h-4 w-4"
-                onClick={() => setSelectedCategory(null)}
+                onClick={() => setSelectedCategory(0)}
               >
                 <X className="h-3 w-3" />
               </Button>
             </div>
           )}
 
-          {selectedSupplier !== null && (
+          {selectedSupplier !== 0 && (
             <div className="flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 text-sm">
               <span>
                 Supplier:{" "}
@@ -455,7 +479,7 @@ export default function ProductTable() {
                 variant="ghost"
                 size="icon"
                 className="h-4 w-4"
-                onClick={() => setSelectedSupplier(null)}
+                onClick={() => setSelectedSupplier(0)}
               >
                 <X className="h-3 w-3" />
               </Button>

@@ -17,6 +17,7 @@ import {
 interface Category {
   id: number;
   nama: string;
+  batas_stok_kritis: number;
 }
 
 interface CategoryModalProps {
@@ -32,13 +33,16 @@ export default function CategoryModal({
 }: CategoryModalProps) {
   const [open, setOpen] = useState(false);
   const [categoryName, setCategoryName] = useState("");
+  const [batasStokKritis, setBatasStokKritis] = useState<string>("5");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [stokKritisError, setStokKritisError] = useState("");
   const { toast } = useToast();
 
   useEffect(() => {
     if (selectedCategory && isEdit) {
       setCategoryName(selectedCategory.nama);
+      setBatasStokKritis(selectedCategory.batas_stok_kritis.toString());
     }
   }, [selectedCategory, isEdit]);
 
@@ -46,24 +50,39 @@ export default function CategoryModal({
     setOpen(true);
     if (!isEdit) {
       setCategoryName("");
+      setBatasStokKritis("0");
     }
   };
 
   const handleClose = () => {
     setOpen(false);
     setError("");
+    setStokKritisError("");
     if (!isEdit) {
       setCategoryName("");
+      setBatasStokKritis("0");
     }
   };
 
   const validateForm = () => {
+    let isValid = true;
+    
     if (!categoryName.trim()) {
       setError("Nama kategori harus diisi");
-      return false;
+      isValid = false;
+    } else {
+      setError("");
     }
-    setError("");
-    return true;
+
+    const stokKritisValue = parseInt(batasStokKritis);
+    if (isNaN(stokKritisValue) || stokKritisValue < 0) {
+      setStokKritisError("Batas stok kritis harus berupa angka positif");
+      isValid = false;
+    } else {
+      setStokKritisError("");
+    }
+
+    return isValid;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -91,7 +110,10 @@ export default function CategoryModal({
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ nama: categoryName }),
+        body: JSON.stringify({ 
+          nama: categoryName,
+          batas_stok_kritis: parseInt(batasStokKritis) || 0
+        }),
       });
 
       if (response.ok) {
@@ -125,6 +147,11 @@ export default function CategoryModal({
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleBatasStokChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setBatasStokKritis(value);
   };
 
   return (
@@ -161,6 +188,22 @@ export default function CategoryModal({
                 />
               </div>
               {error && <p className="text-sm text-red-500 text-right">{error}</p>}
+              
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="batasStokKritis" className="text-right">
+                  Batas Stok Kritis
+                </Label>
+                <Input
+                  id="batasStokKritis"
+                  type="number"
+                  value={batasStokKritis}
+                  onChange={handleBatasStokChange}
+                  placeholder="Masukkan batas stok kritis"
+                  min="0"
+                  className={`col-span-3 ${stokKritisError ? "border-red-500" : ""}`}
+                />
+              </div>
+              {stokKritisError && <p className="text-sm text-red-500 text-right">{stokKritisError}</p>}
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={handleClose}>

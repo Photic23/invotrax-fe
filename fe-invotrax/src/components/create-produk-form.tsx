@@ -27,6 +27,7 @@ import CategoryModal from "./kategori-modal";
 interface Category {
   id: number;
   nama: string;
+  batas_stok_kritis: number;
 }
 
 interface Supplier {
