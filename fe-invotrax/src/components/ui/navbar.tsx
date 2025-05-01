@@ -43,6 +43,11 @@ export default function Navbar() {
                 href: "/admin/users/add",
                 description: "Add new user."
             },
+            {
+              title: "Daftar Exchange List",
+              href: "/exchange/list",
+              description: "Lihat Daftar Penawaran Pengadaan."
+            }
             ];
         case 'staff':
             return [
@@ -70,7 +75,13 @@ export default function Navbar() {
               title: "Daftar Penawaran Pengadaan",
               href: "/penawaran-pengadaan",
               description: "Lihat Daftar Penawaran Pengadaan."
+            },
+            {
+              title: "Daftar Exchange List",
+              href: "/exchange/list",
+              description: "Lihat Daftar Penawaran Pengadaan."
             }
+            
             ];
         case 'customer':
             return [
@@ -95,6 +106,11 @@ export default function Navbar() {
                 href: "/customer/support",
                 description: "Get help and submit support tickets."
             },
+            {
+              title: "Daftar Exchange List",
+              href: "/exchange/list",
+              description: "Lihat Daftar Penawaran Pengadaan."
+            }
             // {
             //   title: "Daftar Request Pengadaan",
             //   href: "/pengajuan_penawaran_pengadaan",
@@ -108,7 +124,7 @@ export default function Navbar() {
                 title: "Penawaran Pengadaan",
                 href: "/penawaran-pengadaan",
                 description: "Manage Procurement to Supplier."
-            },
+            }
             ];
         case 'manager':
             return [
@@ -132,6 +148,11 @@ export default function Navbar() {
                 title: "Support",
                 href: "/customer/support",
                 description: "Get help and submit support tickets."
+              },
+              {
+                title: "Daftar Exchange List",
+                href: "/exchange/list",
+                description: "Lihat Daftar Penawaran Pengadaan."
               }
             ];
       default:

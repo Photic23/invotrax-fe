@@ -100,7 +100,7 @@ export default function KontrakDetail({ kontrakId }: KontrakDetailProps) {
   const handleDeleteKontrak = async () => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/manajemen_kontrak/kontrak/${kontrakId}/hapus/`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/manajemen_kontrak/kontrak/${kontrakId}/`,
         {
           method: "DELETE",
           headers: {
@@ -109,22 +109,24 @@ export default function KontrakDetail({ kontrakId }: KontrakDetailProps) {
           },
         }
       );
-
+  
+      const data = await response.json();
+  
       if (response.ok) {
         toast({
           title: "Sukses",
-          description: "Kontrak berhasil dihapus",
+          description: data.message || "Kontrak berhasil dihapus",
           variant: "default",
         });
         router.push("/kontrak");
       } else {
-        const errorData = await response.json();
         toast({
           title: "Error",
-          description: "Gagal menghapus kontrak",
+          description: data.error || "Gagal menghapus kontrak",
           variant: "destructive",
         });
-        console.error("Delete error:", errorData);
+        console.error("Delete error:", data);
+        setConfirmOpen(false);
       }
     } catch (error) {
       console.error("Error deleting contract:", error);
@@ -133,8 +135,9 @@ export default function KontrakDetail({ kontrakId }: KontrakDetailProps) {
         description: "Terjadi kesalahan saat menghapus kontrak",
         variant: "destructive",
       });
+      setConfirmOpen(false);
     }
-  };
+  }
 
   // Format date from YYYY-MM-DD to DD/MM/YYYY
   const formatDate = (dateString: string) => {

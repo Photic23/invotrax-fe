@@ -11,6 +11,14 @@ import { useParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
 import Navbar from '@/components/ui/navbar';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface UserData {
   id: number;
@@ -32,7 +40,8 @@ export default function UserRoleUpdate() {
   const [success, setSuccess] = useState(false);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [role, setRole] = useState<string>('');
-  const {logout } = useAuth();
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+  const { logout } = useAuth();
 
   // Fetch user data when component mounts
   useEffect(() => {
@@ -75,7 +84,12 @@ export default function UserRoleUpdate() {
     fetchUser();
   }, [id]);
 
+  const handleOpenConfirmDialog = () => {
+    setIsConfirmDialogOpen(true);
+  };
+
   const handleSubmit = async () => {
+    setIsConfirmDialogOpen(false);
     setIsLoading(true);
     setError('');
     setSuccess(false);
@@ -278,7 +292,7 @@ export default function UserRoleUpdate() {
             Cancel
           </Button>
           <Button 
-            onClick={handleSubmit} 
+            onClick={handleOpenConfirmDialog} 
             disabled={isLoading || role === userData?.role}
           >
             {isLoading ? (
@@ -293,6 +307,53 @@ export default function UserRoleUpdate() {
         </CardFooter>
       </Card>
     </div>
+
+    {/* Confirmation Dialog */}
+    <Dialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Confirm Role Change</DialogTitle>
+          <DialogDescription>
+            Are you sure you want to change the role for {userData?.username} from {userData?.role} to {role}?
+          </DialogDescription>
+        </DialogHeader>
+        
+        <div className="py-4">
+          {role === "admin" && (
+            <Alert className="mb-4 bg-amber-50 border-amber-200">
+              <AlertCircle className="h-4 w-4 text-amber-600" />
+              <AlertDescription className="text-amber-700">
+                You are about to grant administrative privileges to this user. They will have access to sensitive system functions.
+              </AlertDescription>
+            </Alert>
+          )}
+        </div>
+        
+        <DialogFooter className="flex justify-between sm:justify-between">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setIsConfirmDialogOpen(false)}
+          >
+            Cancel
+          </Button>
+          <Button 
+            type="button"
+            onClick={handleSubmit}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              'Confirm Change'
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
 </div>
   );
 }

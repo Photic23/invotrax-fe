@@ -13,7 +13,7 @@ export default function ExchangeRequestPage() {
     const { logout } = useAuth();
 
     return (
-        <ProtectedRoute requiredRole={["staff", "customer"]}>
+        <ProtectedRoute requiredRole={["staff", "customer", "admin", "manager"]}>
             <div className="min-h-screen flex flex-col">
                 {/* Navbar */}
                 <header className="border-b">
