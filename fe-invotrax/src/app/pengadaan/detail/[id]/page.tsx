@@ -4,7 +4,7 @@ import axios from "axios";
 import { useSearchParams } from "next/navigation";
 import { ButtonPengadaan } from "../../../../components/elements/detail/ButtonPengadaan";
 import { DetailField } from "../../../../components/elements/detail/DetailField";
-import { Title } from "../../../../components/elements/detail/Title";
+import { Title } from "../../../../components/elements/detail/TitlePengadaan";
 import { useEffect, useState } from "react";
 import Status, { DetailPengadaanStatus } from "@/components/elements/detail/Status";
 import { InputField } from "@/components/elements/detail/InputField";
@@ -130,7 +130,7 @@ export default function PengadaanDetail() {
     return (
         <div className="px-14 content-center py-6">
             <div className="flex justify-between">
-                <Title title='ABCD-001'/> 
+                <Title title='Supply ABCD-001'/> 
                 <Status status={status}/>
             </div>        
             <div className="py-4">

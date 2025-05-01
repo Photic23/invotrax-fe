@@ -65,6 +65,11 @@ export default function Navbar() {
                 title: "Daftar Request Pengadaan",
                 href: "/pengajuan_penawaran_pengadaan",
                 description: "Lihat Daftar Request Pengadaan."
+            },
+            {
+              title: "Daftar Penawaran Pengadaan",
+              href: "/penawaran-pengadaan",
+              description: "Lihat Daftar Penawaran Pengadaan."
             }
             ];
         case 'customer':
@@ -75,16 +80,26 @@ export default function Navbar() {
                 href: "/customer/profile",
                 description: "View and update your account information."
             },
+            // {
+            //     title: "My Orders",
+            //     href: "/customer/orders",
+            //     description: "Track your orders and purchase history."
+            // },
             {
-                title: "My Orders",
-                href: "/customer/orders",
-                description: "Track your orders and purchase history."
+              title: "My Orders",
+              href: "/pengajuan_penawaran_pengadaan",
+              description: "Track your orders and purchase history."
             },
             {
                 title: "Support",
                 href: "/customer/support",
                 description: "Get help and submit support tickets."
-            }
+            },
+            // {
+            //   title: "Daftar Request Pengadaan",
+            //   href: "/pengajuan_penawaran_pengadaan",
+            //   description: "Lihat Daftar Request Pengadaan."
+            // }
             ];
         case 'vendor': //atau supplier
             return [
