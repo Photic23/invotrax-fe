@@ -9,7 +9,7 @@ import CreatePenilaianForm from "@/components/create-penilaian-form";
 
 export default function CreatePenilaianPage() {
   const params = useParams();
-  const exchangeId = parseInt(params.exchangeId as string);
+  const pengajuanId = parseInt(params.pengajuanId as string);
   const { logout } = useAuth();
 
   return (
@@ -38,7 +38,7 @@ export default function CreatePenilaianPage() {
 
         {/* Form Container */}
         <div className="container py-8">
-          <CreatePenilaianForm exchangeId={exchangeId} />
+          <CreatePenilaianForm pengajuanId={pengajuanId} />
         </div>
       </div>
     </ProtectedRoute>

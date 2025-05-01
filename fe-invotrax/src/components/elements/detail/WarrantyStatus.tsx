@@ -1,5 +1,5 @@
 import React from 'react';
-import { Timer, Truck, X, Check } from "lucide-react";
+import { BadgeCheck, Truck, X, Check } from "lucide-react";
 
 interface WarrantyStatusProps {
     warranty_status: string;
@@ -10,7 +10,7 @@ const WarrantyStatus: React.FC<WarrantyStatusProps> = ({ warranty_status }) => {
     const getWarrantyStatus = (warranty_status: string) => {
         switch (warranty_status) {
             case "Berlaku":
-                return { label: "Berlaku", icon: <Timer size={16} strokeWidth={1.5}/> };
+                return { label: "Berlaku", icon: <BadgeCheck size={16} strokeWidth={1.5}/> };
             case "Habis":
                 return { label: "Habis", icon: <X size={16} strokeWidth={1.5}/> };
             default:

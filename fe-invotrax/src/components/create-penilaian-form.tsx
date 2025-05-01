@@ -20,21 +20,23 @@ interface PengajuanDetail {
   nama_produk: string;
   jumlah_produk: number;
   deskripsi_produk: string;
-}
-
-interface ExchangeRequest {
-  id: number;
-  pengajuan: number;
-  pengajuan_detail: PengajuanDetail;
   tanggal_penerimaan?: string;
 }
 
+// interface ExchangeRequest {
+//   id: number;
+//   pengajuan: number;
+//   pengajuan_detail: PengajuanDetail;
+//   tanggal_penerimaan?: string;
+// }
+
 interface CreatePenilaianFormProps {
-  exchangeId: number;
+  pengajuanId: number;
 }
 
-export default function CreatePenilaianForm({ exchangeId }: CreatePenilaianFormProps) {
-  const [exchangeRequest, setExchangeRequest] = useState<ExchangeRequest | null>(null);
+export default function CreatePenilaianForm({ pengajuanId }: CreatePenilaianFormProps) {
+  // const [exchangeRequest, setExchangeRequest] = useState<ExchangeRequest | null>(null);
+  const [pengajuan, setPengajuan] = useState<PengajuanDetail | null>(null);
   const [rating, setRating] = useState<number | null>(null);
   const [description, setDescription] = useState("");
   const { toast } = useToast();
@@ -43,11 +45,42 @@ export default function CreatePenilaianForm({ exchangeId }: CreatePenilaianFormP
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
   useEffect(() => {
-    const fetchExchange = async () => {
+  //   const fetchExchange = async () => {
+  //     try {
+  //       const res = await fetch(
+  //         `${process.env.NEXT_PUBLIC_API_URL}/api/layanan_pasca_beli/exchange-request/${exchangeId}/`,
+  //         {
+  //           headers: {
+  //             Authorization: `Bearer ${token}`,
+  //             "Content-Type": "application/json",
+  //           },
+  //         }
+  //       );
+
+  //       if (!res.ok) throw new Error("Gagal mengambil data exchange");
+
+  //       const data = await res.json();
+  //       setExchangeRequest(data);
+  //     } catch (error) {
+  //       toast({
+  //         title: "Gagal",
+  //         description: "Tidak dapat mengambil data exchange request.",
+  //         variant: "destructive",
+  //       });
+  //     }
+  //   };
+
+  //   if (token) fetchExchange();
+  // }, [exchangeId, token, toast]);
+
+    const fetchPengajuan = async () => {
+      if (!pengajuanId) return;
+
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/layanan_pasca_beli/exchange-request/${exchangeId}/`,
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/pengajuan/pengajuan_penawaran_pengadaan/${pengajuanId}/`,
           {
+            method: "GET",
             headers: {
               Authorization: `Bearer ${token}`,
               "Content-Type": "application/json",
@@ -55,33 +88,46 @@ export default function CreatePenilaianForm({ exchangeId }: CreatePenilaianFormP
           }
         );
 
-        if (!res.ok) throw new Error("Gagal mengambil data exchange");
+        if (!response.ok) throw new Error("Gagal mengambil detail pengajuan.");
 
-        const data = await res.json();
-        setExchangeRequest(data);
+        const data = await response.json();
+        setPengajuan(data);
       } catch (error) {
+        console.error("Error fetching pengajuan detail:", error);
         toast({
-          title: "Gagal",
-          description: "Tidak dapat mengambil data exchange request.",
+          title: "Error",
+          description: "Gagal mengambil detail pengajuan.",
           variant: "destructive",
         });
       }
     };
 
-    if (token) fetchExchange();
-  }, [exchangeId, token, toast]);
+    if (token) {
+      fetchPengajuan();
+    }
+  }, [pengajuanId, token, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!rating || !exchangeRequest) {
+    // if (!rating || !exchangeRequest) {
+    //   toast({
+    //     title: "Data tidak lengkap",
+    //     description: "Pastikan rating dipilih dan data exchange tersedia.",
+    //     variant: "destructive",
+    //   });
+    //   return;
+    // }
+
+    if (!rating || !pengajuan) {
       toast({
         title: "Data tidak lengkap",
-        description: "Pastikan rating dipilih dan data exchange tersedia.",
+        description: "Pastikan rating dipilih dan data pengajuan tersedia.",
         variant: "destructive",
       });
       return;
     }
+
 
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/penilaian/rating/`, {
@@ -93,12 +139,14 @@ export default function CreatePenilaianForm({ exchangeId }: CreatePenilaianFormP
         body: JSON.stringify({
           rating,
           deskripsi: description,
-          exchange_request: exchangeRequest.id,
-          pengajuan: exchangeRequest.pengajuan,
+          // exchange_request: exchangeRequest.id,
+          pengajuan: pengajuan.id,
         }),
       });
 
-      if (!response.ok) throw new Error("Gagal mengirim penilaian");
+      if (!response.ok) {
+        throw new Error("Gagal mengirim penilaian");
+      }
 
       toast({
         title: "Berhasil",
@@ -109,7 +157,7 @@ export default function CreatePenilaianForm({ exchangeId }: CreatePenilaianFormP
       setDescription("");
 
       // Redirect ke halaman list exchange
-      router.push("/exchange/list");
+      router.push(`/pengajuan_penawaran_pengadaan/${pengajuanId}`);
     } catch (error) {
       toast({
         title: "Gagal mengirim",
@@ -123,17 +171,17 @@ export default function CreatePenilaianForm({ exchangeId }: CreatePenilaianFormP
     <form onSubmit={handleSubmit} className="max-w-xl mx-auto">
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>Survey Penilaian Kepuasan ID {exchangeId}</CardTitle>
+          <CardTitle>Survey Penilaian Kepuasan ID {pengajuanId}</CardTitle>
         </CardHeader>
 
         <CardContent className="space-y-4">
-          {exchangeRequest && (
+          {pengajuan && (
             <>
               <div>
                 <Label htmlFor="productName">Nama Barang</Label>
                 <Input
                   id="productName"
-                  value={exchangeRequest.pengajuan_detail?.nama_produk || ""}
+                  value={pengajuan.nama_produk || ""}
                   readOnly
                 />
               </div>
@@ -142,18 +190,18 @@ export default function CreatePenilaianForm({ exchangeId }: CreatePenilaianFormP
                 <Label htmlFor="quantity">Jumlah Barang</Label>
                 <Input
                   id="quantity"
-                  value={exchangeRequest.pengajuan_detail?.jumlah_produk || ""}
+                  value={pengajuan.jumlah_produk || ""}
                   readOnly
                 />
               </div>
 
-              {exchangeRequest.tanggal_penerimaan && (
+              {pengajuan.tanggal_penerimaan && (
                 <div>
                   <Label htmlFor="receiveDate">Tanggal Penerimaan</Label>
                   <Input
                     id="receiveDate"
                     type="date"
-                    value={exchangeRequest.tanggal_penerimaan}
+                    value={pengajuan.tanggal_penerimaan}
                     readOnly
                   />
                 </div>

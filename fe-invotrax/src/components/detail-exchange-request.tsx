@@ -232,7 +232,7 @@ export default function ExchangeRequestDetail({
         )}
 
         {exchangeRequest.status === "diterima" && (
-            <Button onClick={() => router.push(`/penilaian/${exchangeId}`)}>
+            <Button onClick={() => router.push(`/penilaian/${pengajuan?.id}`)}>
             Buat Penilaian
             </Button>
         )}

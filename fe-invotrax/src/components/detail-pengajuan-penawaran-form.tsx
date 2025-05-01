@@ -24,6 +24,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import Status, { DetailPengadaanStatus } from "./elements/detail/Status";
 import { Input } from "./ui/input";
 import WarrantyStatus from "./elements/detail/WarrantyStatus";
+import RatingStatus from "./elements/detail/RatingStatus";
 
 interface PengajuanPenawaranPengadaan {
 id: number;
@@ -39,12 +40,19 @@ status_garansi: string;
 tanggal_garansi: Date;
 }
 
+interface Penilaian {
+    rating: number;
+}
+
 interface PengajuanPenawaranPengadaanDetailProps {
 pengajuanId: number;
 }
 
 export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: PengajuanPenawaranPengadaanDetailProps) {
     const [pengajuan, setPengajuan] = useState<PengajuanPenawaranPengadaan | null>(null);
+    const [penilaian, setPenilaian] = useState<Penilaian | null>(null);
+    const [exchangeExists, setExchangeExists] = useState(false);
+
     const [isLoading, setIsLoading] = useState(true);
     const [confirmOpen, setConfirmOpen] = useState(false);
     const { toast } = useToast();
@@ -56,7 +64,7 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
     });  
     const [errors, setErrors] = useState<Record<string, string>>({});
 
-    useEffect(() => { fetchPengajuanDetail();}, [pengajuanId, token, toast]);
+    useEffect(() => { fetchPengajuanDetail(); fetchPenilaian(); fetchExchange();}, [pengajuanId, token, toast]);
 
     async function fetchPengajuanDetail() {
         try {
@@ -93,6 +101,69 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
         }
     }
 
+    const fetchPenilaian = async () => {
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/penilaian/rating/by_pengajuan/${pengajuanId}/`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            });
+
+            if (response.status === 204) {
+                // penilaian doesn't exist yet
+                setPenilaian(null);
+                return;
+            }
+
+            if (!response.ok) throw new Error("Failed to fetch penilaian");
+
+            const text = await response.text();
+
+            if (!text) {
+                // no JSON body
+                setPenilaian(null);
+                return;
+            }
+
+            const data = JSON.parse(text);
+            setPenilaian(data);
+        } catch (error) {
+            console.error("Error fetching penilaian:", error);
+            setPenilaian(null); // Fallback
+            // toast can be optional if the error is not critical
+        }
+    };
+
+    const fetchExchange = async () => {
+        try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/layanan_pasca_beli/exchange-request/by_pengajuan/${pengajuanId}/`, {
+            headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+            },
+        });
+    
+        if (response.ok) {
+            const text = await response.text();
+            console.log("Exchange response:", response.status, text);
+
+            if (text) {
+            setExchangeExists(true);
+            } else {
+            setExchangeExists(false);
+            }
+        } else if (response.status === 404 || response.status === 204) {
+            setExchangeExists(false);
+        } else {
+            throw new Error("Failed to fetch exchange");
+        }
+        } catch (error) {
+        console.error("Error fetching exchange:", error);
+        setExchangeExists(false); // fallback
+        }
+    };
+    
     const handleDeletePengajuan = async () => {
         try {
             const response = await fetch(
@@ -391,6 +462,8 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
                 }
             case 'diterima':
                 return {
+                rating:
+                    <RatingStatus rating={penilaian?.rating ?? 0} />,
                 warrantystatus:
                     <WarrantyStatus warranty_status={pengajuan.status_garansi}/>,
                 status:
@@ -508,26 +581,38 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
             case 'diterima':
             const isWarrantyValid = pengajuan.status_garansi === 'Berlaku';
             return {
+                rating:
+                <RatingStatus rating={penilaian?.rating ?? 0} />,
                 warrantystatus:
                     <WarrantyStatus warranty_status={pengajuan.status_garansi}/>,
                 status:
                     <Status status={pengajuan.status}/>,
                 button1: (
-                    isWarrantyValid ? (
-                        <div className="flex gap-4 mt-1.5">
-                            <Button onClick={() => router.push(`/exchange/create/${pengajuan.id}`)}>
-                                Create Exchange Request
-                            </Button>
-                            <Button onClick={() => router.push(`/penilaian/create/${pengajuan.id}`)}>
-                                Buat Penilaian
-                            </Button>
-                        </div>
-                    ) : (
-                        <Button onClick={() => router.push(`/penilaian/create/${pengajuan.id}`)}>
-                            Buat Penilaian
+                    !exchangeExists && !penilaian ? (
+                    <div className="flex gap-4 mt-1.5">
+                        {isWarrantyValid && (
+                        <Button onClick={() => router.push(`/exchange/create/${pengajuan.id}`)}>
+                            Create Exchange Request
                         </Button>
+                        )}
+                        <Button onClick={() => router.push(`/penilaian/${pengajuan.id}`)}>
+                        Buat Penilaian
+                        </Button>
+                    </div>
+                    ) : !exchangeExists && isWarrantyValid ? (
+                    <Button onClick={() => router.push(`/exchange/create/${pengajuan.id}`)}>
+                        Create Exchange Request
+                    </Button>
+                    ) : !penilaian ? (
+                    <Button onClick={() => router.push(`/penilaian/${pengajuan.id}`)}>
+                        Buat Penilaian
+                    </Button>
+                    ) : (
+                    <div className="italic text-sm text-muted-foreground">
+                        Exchange request dan penilaian untuk pengajuan ini sudah dibuat.
+                    </div>
                     )
-                ), 
+                ),
                 button2: <div></div>,
                 field1: 
                     <div>
@@ -593,6 +678,7 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
             <div className="pr-1 flex flex-row space-x-4">
                 {getAdditionalFields(pengajuan.status)?.status}
                 {getAdditionalFields(pengajuan.status)?.warrantystatus}
+                {getAdditionalFields(pengajuan.status)?.rating}
             </div>
         </CardHeader>
         <CardContent className="space-y-4 mx-2">
