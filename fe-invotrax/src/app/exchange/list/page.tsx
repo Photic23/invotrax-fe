@@ -35,18 +35,54 @@ import { Button } from "@/components/ui/button";
 import { Edit, Eye, PlusCircle } from "lucide-react";
 import axios from "axios";
 
-// Define the Exchange interface
+// Define the Exchange interface based on actual API response
 interface Exchange {
   id: number;
-  nama_produk: string;
-  jumlah_produk: number;
-  deskripsi_produk?: string;
+  pengajuan_detail: {
+    id: number;
+    nama_produk: string;
+    jumlah_produk: number;
+    deskripsi_produk: string;
+    status: string;
+  } | null;
   alasan_penukaran: string;
-  status: number; // 0: diajukan, 1: diproses, 2: ditolak, 3: disetujui, 4: selesai
-  tanggal: string; // date in dd/mm/yyyy format from created_at
-  created_by: number; // From API - user ID
-  created_by_username: string; // Username of the creator
-  is_deleted?: boolean;
+  url_foto_penukaran: string;
+  status: string; // String based status (diajukan, diproses, etc.)
+  created_at: string;
+  is_deleted: boolean;
+  created_by: number;
+  created_by_username: string;
+  pengajuan: number | null;
+  tanggal: string; // Formatted date for display
+}
+
+// Define User interface
+interface User {
+  id: number;
+  name: string;
+  role: string;
+}
+
+// Define API response interface
+interface ApiExchangeResponse {
+  id: number;
+  pengajuan_detail: {
+    id: number;
+    nama_produk: string;
+    jumlah_produk: number;
+    deskripsi_produk: string;
+    status: string;
+    [key: string]: any;
+  } | null;
+  alasan_penukaran: string;
+  url_foto_penukaran: string;
+  status: string;
+  created_at: string;
+  is_deleted: boolean;
+  created_by: number;
+  created_by_username: string;
+  pengajuan: number | null;
+  [key: string]: any;
 }
 
 export default function ExchangesTable() {
@@ -54,9 +90,10 @@ export default function ExchangesTable() {
   const [filteredExchanges, setFilteredExchanges] = useState<Exchange[]>([]);
   const [namaFilter, setNamaFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [requesterFilter, setRequesterFilter] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const router = useRouter();
 
   // Fetch exchanges from API
@@ -64,41 +101,43 @@ export default function ExchangesTable() {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/exchange-request/`, {
-        headers: {
-          Authorization: `Bearer ${token}`
+      const response = await axios.get<ApiExchangeResponse[]>(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/layanan_pasca_beli/exchange-request/`, 
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
         }
-      });
+      );
       
       // Transform API data to match our Exchange interface
-      // Map the response data to our Exchange interface
-      const apiExchanges = response.data.map((item: any) => {
-        // Try to get username - it might be nested differently depending on serializer
-        let username = "Unknown";
-        if (typeof item.created_by === 'object' && item.created_by) {
-          username = item.created_by.username || "Unknown";
-        } else if (item.created_by_username) {
-          username = item.created_by_username;
-        } else if (item.created_by_detail && item.created_by_detail.username) {
-          username = item.created_by_detail.username;
-        }
-        
+      const apiExchanges: Exchange[] = response.data.map((item: ApiExchangeResponse) => {
         return {
           id: item.id,
-          nama_produk: item.nama_produk || "",
-          jumlah_produk: item.jumlah_produk || 0,
-          deskripsi_produk: item.deskripsi_produk || "",
-          alasan_penukaran: item.alasan_penukaran || "",
-          status: item.status || 0,
-          tanggal: formatDate(item.created_at || new Date()),
-          created_by: typeof item.created_by === 'object' ? item.created_by?.id : item.created_by,
-          created_by_username: username,
-          is_deleted: item.is_deleted
+          pengajuan_detail: item.pengajuan_detail,
+          alasan_penukaran: item.alasan_penukaran,
+          url_foto_penukaran: item.url_foto_penukaran,
+          status: item.status,
+          created_at: item.created_at,
+          is_deleted: item.is_deleted,
+          created_by: item.created_by,
+          created_by_username: item.created_by_username || "Unknown",
+          pengajuan: item.pengajuan,
+          tanggal: formatDate(item.created_at)
         };
       });
       
-      setExchanges(apiExchanges);
-      setFilteredExchanges(apiExchanges);
+      // Filter by user role - if customer, only show their own requests
+      let filteredByRole = apiExchanges;
+      if (user?.role === 'customer') {
+        filteredByRole = apiExchanges.filter((exchange: Exchange) => 
+          exchange.created_by_username === user.name || 
+          exchange.created_by === user.id
+        );
+      }
+      
+      setExchanges(filteredByRole);
+      setFilteredExchanges(filteredByRole);
       setLoading(false);
     } catch (err: any) {
       console.error("Error fetching exchanges:", err);
@@ -108,7 +147,7 @@ export default function ExchangesTable() {
   };
 
   // Format date from API to dd/mm/yyyy
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
     return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
   };
@@ -116,69 +155,59 @@ export default function ExchangesTable() {
   // Load data when component mounts
   useEffect(() => {
     fetchExchanges();
-  }, []);
+  }, [user]);
 
-  // Filter exchanges based on nama and status
+  // Filter exchanges based on nama, status, and requester
   useEffect(() => {
     let result = exchanges;
     
     if (namaFilter) {
-      result = result.filter(exchange => 
-        exchange.nama_produk.toLowerCase().includes(namaFilter.toLowerCase())
+      result = result.filter((exchange: Exchange) => 
+        exchange.pengajuan_detail?.nama_produk?.toLowerCase().includes(namaFilter.toLowerCase())
       );
     }
     
     if (statusFilter && statusFilter !== "all") {
-      result = result.filter(exchange => exchange.status === parseInt(statusFilter));
+      result = result.filter((exchange: Exchange) => exchange.status === statusFilter);
+    }
+    
+    if (requesterFilter) {
+      result = result.filter((exchange: Exchange) => 
+        exchange.created_by_username?.toLowerCase().includes(requesterFilter.toLowerCase())
+      );
     }
     
     setFilteredExchanges(result);
-  }, [exchanges, namaFilter, statusFilter]);
+  }, [exchanges, namaFilter, statusFilter, requesterFilter]);
 
-  // Define status options
+  // Define status options for filtering - using string values now
   const statusOptions = [
-    { value: 0, label: "Diajukan" },
-    { value: 1, label: "Diproses" },
-    { value: 2, label: "Ditolak" },
-    { value: 3, label: "Disetujui" },
-    { value: 4, label: "Selesai" }
+    { value: "diajukan", label: "Diajukan" },
+    { value: "diproses", label: "Diproses" },
+    { value: "ditolak", label: "Ditolak" },
+    { value: "dikirim", label: "Dikirim" },
+    { value: "diterima", label: "Diterima" }
   ];
 
   // Handle view exchange detail
-  const handleViewExchangeDetail = (id: number) => {
-    router.push(`../exchanges/detail/${id}`);
+  const handleViewExchangeDetail = (id: number): void => {
+    router.push(`../exchange/${id}`);
   };
 
   // Handle view exchange update
-  const handleUpdateExchange = (id: number) => {
-    router.push(`../exchanges/update/${id}`);
+  const handleUpdateExchange = (id: number): void => {
+    router.push(`../exchange/${id}/update`);
   };
 
-  // Handle add exchange
-  const handleAddExchange = () => {
-    router.push('./add');
-  };
-  
-  // Get status text from status code
-  const getStatusText = (status: number) => {
+
+  // Get status color class based on status string
+  const getStatusColorClass = (status: string): string => {
     switch(status) {
-      case 0: return "Diajukan";
-      case 1: return "Diproses";
-      case 2: return "Ditolak";
-      case 3: return "Disetujui";
-      case 4: return "Selesai";
-      default: return "Unknown";
-    }
-  };
-  
-  // Get status color class based on status
-  const getStatusColorClass = (status: number) => {
-    switch(status) {
-      case 0: return "bg-blue-100 text-blue-800"; // Diajukan
-      case 1: return "bg-yellow-100 text-yellow-800"; // Diproses
-      case 2: return "bg-red-100 text-red-800"; // Ditolak
-      case 3: return "bg-green-100 text-green-800"; // Disetujui
-      case 4: return "bg-purple-100 text-purple-800"; // Selesai
+      case "diajukan": return "bg-blue-100 text-blue-800"; 
+      case "diproses": return "bg-yellow-100 text-yellow-800"; 
+      case "ditolak": return "bg-red-100 text-red-800"; 
+      case "dikirim": return "bg-purple-100 text-purple-800"; 
+      case "diterima": return "bg-green-100 text-green-800"; 
       default: return "bg-gray-100 text-gray-800";
     }
   };
@@ -194,6 +223,9 @@ export default function ExchangesTable() {
                   <Navbar></Navbar>
               </div>
               <div className="flex items-center gap-4">
+                  <span className="text-sm font-medium">
+                    {user?.name} ({user?.role})
+                  </span>
                   <Link 
                   href="#"
                   onClick={logout} 
@@ -210,13 +242,11 @@ export default function ExchangesTable() {
             <div>
                 <CardTitle>Exchanges Management</CardTitle>
                 <CardDescription>
-                Manage and filter exchanges across the platform
+                {user?.role === 'customer' 
+                  ? 'View and manage your exchange requests' 
+                  : 'Manage and filter exchanges across the platform'}
                 </CardDescription>
             </div>
-            <Button onClick={handleAddExchange}>
-                <PlusCircle className="w-4 h-4 mr-2" />
-                Add Exchange
-            </Button>
             </CardHeader>
             <CardContent>
             <div className="flex flex-col gap-4 mb-6 md:flex-row">
@@ -241,13 +271,25 @@ export default function ExchangesTable() {
                     <SelectContent>
                     <SelectItem value="all">All Statuses</SelectItem>
                     {statusOptions.map(option => (
-                        <SelectItem key={option.value} value={option.value.toString()}>
+                        <SelectItem key={option.value} value={option.value}>
                         {option.label}
                         </SelectItem>
                     ))}
                     </SelectContent>
                 </Select>
                 </div>
+                {/* Only show requester filter for staff/admin roles */}
+                {user?.role !== 'customer' && (
+                  <div className="flex-1 space-y-2">
+                  <Label htmlFor="requester-filter">Filter by Requester</Label>
+                  <Input
+                      id="requester-filter"
+                      placeholder="Search requester..."
+                      value={requesterFilter}
+                      onChange={(e) => setRequesterFilter(e.target.value)}
+                  />
+                  </div>
+                )}
             </div>
 
             {loading ? (
@@ -257,14 +299,16 @@ export default function ExchangesTable() {
             ) : (
                 <Table>
                 <TableCaption>
-                    Total of {filteredExchanges.length} exchanges {statusFilter !== "all" && `with status: ${getStatusText(parseInt(statusFilter))}`}
+                    {user?.role === 'customer' 
+                      ? `Your exchange requests: ${filteredExchanges.length} total` 
+                      : `Total of ${filteredExchanges.length} exchanges found`}
                 </TableCaption>
                 <TableHeader>
                     <TableRow>
                     <TableHead>ID</TableHead>
                     <TableHead>Nama Produk</TableHead>
                     <TableHead>Jumlah</TableHead>
-                    <TableHead>Requester</TableHead>
+                    {user?.role !== 'customer' && <TableHead>Requester</TableHead>}
                     <TableHead>Tanggal</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
@@ -273,21 +317,21 @@ export default function ExchangesTable() {
                 <TableBody>
                     {filteredExchanges.length === 0 ? (
                     <TableRow>
-                        <TableCell colSpan={7} className="text-center">
+                        <TableCell colSpan={user?.role !== 'customer' ? 7 : 6} className="text-center">
                         No exchanges found matching the filters
                         </TableCell>
                     </TableRow>
                     ) : (
-                    filteredExchanges.map((exchange) => (
+                    filteredExchanges.map((exchange: Exchange) => (
                         <TableRow key={exchange.id}>
                         <TableCell className="font-medium">{exchange.id}</TableCell>
-                        <TableCell>{exchange.nama_produk}</TableCell>
-                        <TableCell>{exchange.jumlah_produk}</TableCell>
-                        <TableCell>{exchange.created_by_username}</TableCell>
+                        <TableCell>{exchange.pengajuan_detail?.nama_produk || "No product data"}</TableCell>
+                        <TableCell>{exchange.pengajuan_detail?.jumlah_produk || 0}</TableCell>
+                        {user?.role !== 'customer' && <TableCell>{exchange.created_by_username}</TableCell>}
                         <TableCell>{exchange.tanggal}</TableCell>
                         <TableCell>
                             <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getStatusColorClass(exchange.status)}`}>
-                            {getStatusText(exchange.status)}
+                            {exchange.status.charAt(0).toUpperCase() + exchange.status.slice(1)}
                             </span>
                         </TableCell>
                         <TableCell className="text-right">

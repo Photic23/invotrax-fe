@@ -15,6 +15,14 @@ import { Badge } from '@/components/ui/badge';
 import { Loader2, LockIcon } from 'lucide-react';
 import Link from 'next/link';
 import Navbar from '@/components/ui/navbar';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface UserProfile {
   id: number;
@@ -44,6 +52,8 @@ export default function UpdateProfilePage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+  const [formValues, setFormValues] = useState<z.infer<typeof formSchema> | null>(null);
 
   // Initialize form
   const form = useForm<z.infer<typeof formSchema>>({
@@ -106,8 +116,17 @@ export default function UpdateProfilePage() {
     fetchUserProfile();
   }, [isLoggedIn, getToken, form, router]);
 
-  // Handle form submission
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  // Handle initial form submission to show confirmation dialog
+  const onSubmitForm = (values: z.infer<typeof formSchema>) => {
+    setFormValues(values);
+    setIsConfirmDialogOpen(true);
+  };
+
+  // Handle final form submission after confirmation
+  const handleConfirmedSubmit = async () => {
+    if (!formValues) return;
+    
+    setIsConfirmDialogOpen(false);
     setIsSaving(true);
     setError(null);
     setSuccess(null);
@@ -121,15 +140,15 @@ export default function UpdateProfilePage() {
       
       // Prepare the data to send
       const formData = {
-        phone_number: values.phone_number,
-        company_name: values.company_name,
+        phone_number: formValues.phone_number,
+        company_name: formValues.company_name,
       };
       
       // Only include passwords if they were provided
-      if (values.password && values.password.length > 0) {
+      if (formValues.password && formValues.password.length > 0) {
         Object.assign(formData, {
-          password: values.password,
-          password2: values.password2
+          password: formValues.password,
+          password2: formValues.password2
         });
       }
       
@@ -221,7 +240,7 @@ export default function UpdateProfilePage() {
                 )}
                 
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                    <form onSubmit={form.handleSubmit(onSubmitForm)} className="space-y-4">
                     {/* Read-only fields */}
                     <div className="space-y-4 mb-6">
                         <div className="border rounded-md p-3 bg-gray-50">
@@ -337,6 +356,42 @@ export default function UpdateProfilePage() {
             </Card>
             </div>
         </div>
+
+        {/* Confirmation Dialog */}
+        <Dialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
+            <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                    <DialogTitle>Confirm Profile Update</DialogTitle>
+                    <DialogDescription>
+                        Are you sure you want to update your profile information?
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-3 py-4">
+                    {formValues?.password && (
+                        <p className="text-amber-600 text-sm">
+                            Note: Your password will be changed as part of this update.
+                        </p>
+                    )}
+                </div>
+                <DialogFooter className="flex justify-between sm:justify-between">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setIsConfirmDialogOpen(false)}
+                    >
+                        Cancel
+                    </Button>
+                    <Button 
+                        type="button"
+                        onClick={handleConfirmedSubmit}
+                        disabled={isSaving}
+                    >
+                        {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Confirm Update
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     </div> 
   );
 }
