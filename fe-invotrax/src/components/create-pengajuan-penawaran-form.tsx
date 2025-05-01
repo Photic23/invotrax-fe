@@ -150,9 +150,9 @@ export default function CreateForm() {
       toast({ title: "Error", description: "Periksa form Anda", variant: "destructive" });
       return;
     }
-
+  
     setIsLoading(true);
-
+  
     try {
       const payload = {
         nama_produk: formData.nama_produk,
@@ -160,28 +160,58 @@ export default function CreateForm() {
         url_foto_produk: formData.url_foto_produk || null,
         deskripsi_produk: formData.deskripsi_produk || null,
         harga_diajukan: formData.harga_diajukan ? parseFloat(formData.harga_diajukan.replace(/,/g, '')) : null,
-        supplier_vendor: formData.supplier_vendor || null,
-        kategori_produk: formData.kategori_produk || null,
+        // Remove these if they're not expected by your backend
+        // supplier_vendor: formData.supplier_vendor || null,
+        // kategori_produk: formData.kategori_produk || null,
       };
-
+  
+      console.log("Sending payload:", payload);
+  
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/pengajuan/pengajuan_penawaran_pengadaan/`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        headers: { 
+          Authorization: `Bearer ${token}`, 
+          "Content-Type": "application/json" 
+        },
         body: JSON.stringify(payload),
       });
-
-      const responseText = await response.text();
-      const responseData = JSON.parse(responseText);
-
+  
+      // Read the response data only once
+      const responseData = await response.text();
+      console.log("Response status:", response.status);
+      console.log("Response body:", responseData);
+      
+      // Try to parse as JSON if possible
+      let parsedData;
+      try {
+        parsedData = JSON.parse(responseData);
+      } catch (e) {
+        // If it's not valid JSON, keep the text version
+        parsedData = responseData;
+      }
+  
       if (response.ok) {
         toast({ title: "Sukses", description: "Penawaran berhasil diajukan." });
         router.push("/pengajuan_penawaran_pengadaan");
       } else {
-        toast({ title: "Error", description: responseData.detail || "Gagal mengajukan.", variant: "destructive" });
+        // Display error details
+        const errorMessage = typeof parsedData === 'object' && parsedData !== null 
+          ? JSON.stringify(parsedData)
+          : parsedData;
+        
+        toast({ 
+          title: "Error", 
+          description: `Gagal mengajukan: ${errorMessage}`, 
+          variant: "destructive" 
+        });
       }
     } catch (error) {
-      console.error(error);
-      toast({ title: "Error", description: "Terjadi kesalahan saat mengirim.", variant: "destructive" });
+      console.error("Request error:", error);
+      toast({ 
+        title: "Error", 
+        description: "Terjadi kesalahan saat mengirim permintaan.", 
+        variant: "destructive" 
+      });
     } finally {
       setIsLoading(false);
     }
