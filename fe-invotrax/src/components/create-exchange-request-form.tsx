@@ -20,6 +20,7 @@ import { useAuth } from "@/contexts/AuthContext";
 interface Pengajuan {
   id: number;
   nama_produk: string;
+  kategori_produk_detail: { id: number; nama: string };
   jumlah_produk: string;
   deskripsi_produk: string;
 }
@@ -222,6 +223,12 @@ export default function CreateExchangeRequestForm({ pengajuanId }: CreateExchang
           <div>
             <Label>Nama Produk</Label>
             <p>{pengajuan?.nama_produk}</p>
+          </div>
+
+          {/* Kategori Produk */}
+          <div>
+            <Label>Kategori Produk</Label>
+            <p>{pengajuan?.kategori_produk_detail.nama}</p>
           </div>
 
           {/* Jumlah Produk */}

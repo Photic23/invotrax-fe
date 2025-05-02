@@ -26,6 +26,7 @@ import Status from "./elements/detail/Status";
 interface Pengajuan {
   id: number;
   nama_produk: string;
+  kategori_produk_detail: { id: number; nama: string };
   jumlah_produk: string;
   deskripsi_produk: string;
 }
@@ -192,6 +193,10 @@ export default function ExchangeRequestDetail({
             <div>
               <Label>Product Name</Label>
               <p>{pengajuan.nama_produk}</p>
+            </div>
+            <div>
+              <Label>Product Category</Label>
+              <p>{pengajuan.kategori_produk_detail.nama}</p>
             </div>
             <div>
               <Label>Quantity</Label>
