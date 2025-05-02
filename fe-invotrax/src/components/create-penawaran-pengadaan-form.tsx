@@ -169,8 +169,15 @@ export default function CreatePenawaranPengadaanForm() {
       newErrors.jumlah_produk = "Jumlah produk harus lebih dari 0";
     }
     
-    if (formData.harga_diajukan && isNaN(parseFloat(formData.harga_diajukan.replace(/,/g, '')))) {
-      newErrors.harga_diajukan = "Harga harus berupa angka";
+    if (!formData.harga_diajukan) {
+      newErrors.harga_diajukan = "Harga tidak boleh kosong";
+    } else {
+      const harga = parseFloat(formData.harga_diajukan.replace(/,/g, ''));
+      if (isNaN(harga)) {
+        newErrors.harga_diajukan = "Harga harus berupa angka";
+      } else if (harga < 0) {
+        newErrors.harga_diajukan = "Harga tidak boleh negatif";
+      }
     }
 
     if (formData.url_foto_produk && !isValidURL(formData.url_foto_produk)) {
