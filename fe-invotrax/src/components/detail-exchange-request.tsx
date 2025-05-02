@@ -243,9 +243,14 @@ export default function ExchangeRequestDetail({
             </Button>
         )}
 
+        {exchangeRequest.status === "diproses" && (
+            <p className="text-sm text-muted-foreground">Menunggu pengiriman dari admin.</p>
+        )}
+
         {exchangeRequest.status !== "diterima" &&
             exchangeRequest.status !== "dikirim" &&
-            exchangeRequest.status !== "ditolak" && (
+            exchangeRequest.status !== "ditolak" &&
+            exchangeRequest.status !== "diproses" && (
             <>
                 <Button onClick={() => router.push(`/exchange/${exchangeId}/update`)}>
                 Update Exchange
