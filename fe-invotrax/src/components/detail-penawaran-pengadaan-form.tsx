@@ -26,9 +26,9 @@ import { Input } from "./ui/input";
 
 interface PenawaranPengadaan {
   id: number;
-  supplier_vendor: { id: number; company_name: string };
+  supplier_vendor_detail: { id: number; company_name: string };
   nama_produk: string;
-  kategori_produk: { id: number; nama: string };
+  kategori_produk_detail: { id: number; nama: string };
   jumlah_produk: number;
   deskripsi_produk: string;
   url_foto_produk: string;
@@ -533,7 +533,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
       <CardContent className="space-y-4 mx-2">
         <div>
           <Label>Nama Supplier</Label>
-          <p>{pengadaan.supplier_vendor.company_name}</p>
+          <p>{pengadaan.supplier_vendor_detail.company_name}</p>
         </div>
         <div>
           <Label>Nama Produk</Label>
@@ -541,7 +541,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
         </div>
         <div>
           <Label>Kategori Produk</Label>
-          <p>{pengadaan.kategori_produk.nama}</p>
+          <p>{pengadaan.kategori_produk_detail.nama}</p>
         </div>
         <div>
           <Label>Jumlah Stok</Label>

@@ -28,9 +28,9 @@ import RatingStatus from "./elements/detail/RatingStatus";
 
 interface PengajuanPenawaranPengadaan {
 id: number;
-supplier_vendor: { id: number; company_name: string };
+supplier_vendor_detail: { id: number; company_name: string };
 nama_produk: string;
-kategori_produk: { id: number; nama: string };
+kategori_produk_detail: { id: number; nama: string };
 jumlah_produk: number;
 deskripsi_produk: string;
 url_foto_produk: string;
@@ -686,7 +686,7 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
         <CardContent className="space-y-4 mx-2">
             <div>
             <Label>Nama Supplier</Label>
-            <p>{pengajuan.supplier_vendor.company_name}</p>
+            <p>{pengajuan.supplier_vendor_detail.company_name}</p>
             </div>
             <div>
             <Label>Nama Produk</Label>
@@ -694,7 +694,7 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
             </div>
             <div>
             <Label>Kategori Produk</Label>
-            <p>{pengajuan.kategori_produk.nama}</p>
+            <p>{pengajuan.kategori_produk_detail.nama}</p>
             </div>
             <div>
             <Label>Jumlah Stok</Label>
