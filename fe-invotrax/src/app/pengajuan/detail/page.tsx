@@ -1,6 +1,6 @@
 
 import { Suspense } from 'react'
-import PengajuanDetail from '@/components/PengajuanDetail' // adjusted path with correct casing
+import PengajuanDetail from '../../../components/PengajuanDetail'
 
 export default function DetailPage() {
   return (
