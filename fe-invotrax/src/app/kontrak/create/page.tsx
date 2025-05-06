@@ -24,7 +24,7 @@ export default function CreateKontrakPage() {
               <Link
                 href="#"
                 onClick={logout}
-                className="bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium"
+                className="bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium"
               >
                 Logout
               </Link>
