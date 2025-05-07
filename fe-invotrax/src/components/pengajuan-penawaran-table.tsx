@@ -4,8 +4,6 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { DatePickerWithRange } from "@/components/ui/date-range-picker";
-import { Button } from "@/components/ui/button";
-import { PencilIcon } from "lucide-react";
 import { format } from "date-fns";
 import { DateRange } from "react-day-picker";
 
@@ -104,7 +102,6 @@ export default function PengajuanPenawaranTable() {
               <th className="border-b p-2 text-left">Nama Produk</th>
               <th className="border-b p-2 text-left">Status</th>
               <th className="border-b p-2 text-left">Tanggal Diajukan</th>
-              <th className="border-b p-2 text-left">Edit</th>
             </tr>
           </thead>
           <tbody>
@@ -116,11 +113,6 @@ export default function PengajuanPenawaranTable() {
                 <td className="border-b p-2">{row.nama_produk}</td>
                 <td className="border-b p-2">{row.status}</td>
                 <td className="border-b p-2">{format(new Date(row.created_at), "yyyy-MM-dd")}</td>
-                <td className="border-b p-2">
-                  <Button variant="ghost" onClick={() => router.push(`/pengajuan_penawaran_pengadaan/${row.id}/update`)}>
-                    <PencilIcon className="h-4 w-4" />
-                  </Button>
-                </td>
               </tr>
             ))}
           </tbody>

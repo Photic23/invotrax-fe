@@ -161,8 +161,8 @@ export default function CreateForm() {
         deskripsi_produk: formData.deskripsi_produk || null,
         harga_diajukan: formData.harga_diajukan ? parseFloat(formData.harga_diajukan.replace(/,/g, '')) : null,
         // Remove these if they're not expected by your backend
-        // supplier_vendor: formData.supplier_vendor || null,
-        // kategori_produk: formData.kategori_produk || null,
+        supplier_vendor: formData.supplier_vendor || null,
+        kategori_produk: formData.kategori_produk || null,
       };
   
       console.log("Sending payload:", payload);

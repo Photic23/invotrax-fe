@@ -5,30 +5,33 @@ import { useSearchParams } from "next/navigation";
 import { ButtonPengadaan } from "@/components/elements/detail/ButtonPengadaan";
 import { DetailField } from "@/components/elements/detail/DetailField";
 import { Title } from "@/components/elements/detail/TitlePengadaan";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import Status, { DetailPengadaanStatus } from "@/components/elements/detail/Status";
 import { InputField } from "@/components/elements/detail/InputField";
 
-export default function PengajuanDetail({ detailPengajuanId } : { detailPengajuanId: number }) {
+function PengajuanDetailContent() {
     const [status, setStatus] = useState<DetailPengadaanStatus>('diajukan'); //still hardcoded
     const [role, setRole] = useState<string>('supplier'); // still hardcoded
     const [pengadaan, setPengajuan] = useState<string>(""); // ensure this is always a string
     const searchParams = useSearchParams();
-    const query = new URLSearchParams(searchParams?.toString() || "");
-    const id = query.get("id");
     const [loading, setLoading] = useState<boolean>(true);
 
-    //still error
     useEffect(() => {
-        // Make sure id is a string, default to "1" if it's not available or not a string
-        setPengajuan(id?.toString() || "1");
+        // Get ID from URL query parameters
+        const id = searchParams.get("id");
+        
+        // Make sure id is a string, default to "1" if it's not available
+        const detailPengajuanId = id || "1";
+        setPengajuan(detailPengajuanId);
         console.log("Check", id);
 
         // Call fetchKelompok only if idStr is meaningful
-        if(id !== "1"){
-            fetchKelompok(pengadaan);
+        if(detailPengajuanId !== "1"){
+            fetchKelompok(detailPengajuanId);
+        } else {
+            fetchKelompok(detailPengajuanId);
         }
-    }, [id]);
+    }, [searchParams]);
 
     const fetchKelompok = async (id: string) => {
         setLoading(true);
@@ -141,13 +144,6 @@ export default function PengajuanDetail({ detailPengajuanId } : { detailPengajua
 
     const detailButtons = getDetailButton(status, role);
 
-    
-
-// TODO:
-// 1. cari tau bagaimana passing id di url path di nextjs, cari tau folder structurenya seperti apa
-// 2. panggil function api nya di dalam page.tsx kemudian di print isinya apa
-// 3. cari tau useeffect
-
     return (
         <div className="px-14 content-center py-6">
             <div className="flex justify-between">
@@ -172,4 +168,12 @@ export default function PengajuanDetail({ detailPengajuanId } : { detailPengajua
             </div>
         </div>
     );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <PengajuanDetailContent />
+    </Suspense>
+  )
 }

@@ -20,7 +20,8 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface Penawaran {
   id: number;
@@ -35,6 +36,8 @@ export default function CreateKontrakForm() {
   const [penawarans, setPenawarans] = useState<Penawaran[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [serverError, setServerError] = useState<string | null>(null);
+  const [debugInfo, setDebugInfo] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     penawaran: "",
@@ -47,14 +50,29 @@ export default function CreateKontrakForm() {
     Array.isArray(data) ? data : data?.results ?? [];
 
   const getUsedPenawaranIds = async () => {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/manajemen_kontrak/kontrak/`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    const kontraks = await res.json();
-    return new Set(
-      kontraks.map((k: any) => k.penawaran_detail?.id).filter(Boolean)
-    );
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/manajemen_kontrak/kontrak/`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      if (!res.ok) {
+        throw new Error(`Failed to fetch kontrak data: ${res.status}`);
+      }
+      
+      const kontraks = await res.json();
+      return new Set(
+        kontraks.map((k: any) => k.penawaran_detail?.id).filter(Boolean)
+      );
+    } catch (err) {
+      console.error("Error getting used penawaran IDs:", err);
+      toast({
+        title: "Error",
+        description: "Gagal mengambil data kontrak yang ada",
+        variant: "destructive",
+      });
+      return new Set();
+    }
   };
 
   const fetchPenawarans = async () => {
@@ -69,6 +87,11 @@ export default function CreateKontrakForm() {
           },
         }
       );
+      
+      if (!res.ok) {
+        throw new Error(`Failed to fetch penawarans: ${res.status}`);
+      }
+      
       const data = normalizeList(await res.json());
 
       const usedIds = await getUsedPenawaranIds();
@@ -87,7 +110,7 @@ export default function CreateKontrakForm() {
 
   useEffect(() => {
     fetchPenawarans();
-  }, [toast]);
+  }, []);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -119,6 +142,13 @@ export default function CreateKontrakForm() {
 
     if (name === "dokumen_kontrak" && files) {
       setFormData((prev) => ({ ...prev, dokumen_kontrak: files[0] }));
+      
+      // Reset errors when choosing a new file
+      if (errors.dokumen_kontrak) {
+        setErrors((prev) => ({ ...prev, dokumen_kontrak: "" }));
+      }
+      setServerError(null);
+      setDebugInfo(null);
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
@@ -138,6 +168,8 @@ export default function CreateKontrakForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setServerError(null);
+    setDebugInfo(null);
 
     if (!validateForm()) {
       return;
@@ -173,14 +205,35 @@ export default function CreateKontrakForm() {
         });
         router.push("/kontrak");
       } else {
+        // Get detailed error information
+        let errorDetail = "Gagal membuat kontrak";
+        try {
+          const errorData = await res.json();
+          if (errorData.detail) {
+            errorDetail = errorData.detail;
+          } else if (errorData.dokumen_kontrak) {
+            // Handle field-specific errors
+            errorDetail = `Error dokumen kontrak: ${errorData.dokumen_kontrak}`;
+          } else {
+            // Convert error object to string for debugging
+            setDebugInfo(JSON.stringify(errorData, null, 2));
+          }
+        } catch (parseError) {
+          // If can't parse JSON, use status text
+          errorDetail = `Error (${res.status}): ${res.statusText}`;
+        }
+        
+        setServerError(errorDetail);
+        
         toast({
           title: "Error",
-          description: "Gagal membuat kontrak",
+          description: errorDetail,
           variant: "destructive",
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating kontrak:", error);
+      setServerError(error.message || "Terjadi kesalahan saat membuat kontrak");
       toast({
         title: "Error",
         description: "Terjadi kesalahan",
@@ -206,6 +259,23 @@ export default function CreateKontrakForm() {
         </CardTitle>
       </CardHeader>
 
+      {serverError && (
+        <Alert variant="destructive" className="mx-8 mb-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>
+            {serverError}
+          </AlertDescription>
+        </Alert>
+      )}
+      
+      {debugInfo && (
+        <div className="mx-8 mb-4 p-4 bg-gray-100 rounded-md overflow-auto">
+          <h4 className="font-medium mb-2">Debug Information:</h4>
+          <pre className="text-xs">{debugInfo}</pre>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
           <div className="space-y-2">
@@ -218,11 +288,17 @@ export default function CreateKontrakForm() {
                 <SelectValue placeholder="Pilih kode transaksi" />
               </SelectTrigger>
               <SelectContent>
-                {penawarans.map((p) => (
-                  <SelectItem key={p.id} value={p.id.toString()}>
-                    {p.id}
+                {penawarans.length > 0 ? (
+                  penawarans.map((p) => (
+                    <SelectItem key={p.id} value={p.id.toString()}>
+                      {p.id}
+                    </SelectItem>
+                  ))
+                ) : (
+                  <SelectItem value="no-options" disabled>
+                    Tidak ada kode transaksi tersedia
                   </SelectItem>
-                ))}
+                )}
               </SelectContent>
             </Select>
             {errors.penawaran && (
@@ -268,7 +344,7 @@ export default function CreateKontrakForm() {
                 value={formData.dokumen_kontrak?.name || ""}
                 placeholder="Belum ada file"
                 readOnly
-                className="flex-[3]"
+                className={`flex-[3] ${errors.dokumen_kontrak ? "border-red-500" : ""}`}
               />
 
               <input
@@ -290,6 +366,11 @@ export default function CreateKontrakForm() {
             {errors.dokumen_kontrak && (
               <p className="text-sm text-red-500">{errors.dokumen_kontrak}</p>
             )}
+            
+            <p className="text-xs text-gray-500 mt-1">
+              File harus berformat PDF dan berukuran maksimal 10MB. 
+              Pastikan direktori media memiliki izin yang benar.
+            </p>
           </div>
         </CardContent>
 

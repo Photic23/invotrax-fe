@@ -26,6 +26,7 @@ import Status from "./elements/detail/Status";
 interface Pengajuan {
   id: number;
   nama_produk: string;
+  kategori_produk_detail: { id: number; nama: string };
   jumlah_produk: string;
   deskripsi_produk: string;
 }
@@ -49,7 +50,7 @@ export default function ExchangeRequestDetail({
   const [exchangeRequest, setExchangeRequest] = useState<ExchangeRequest | null>(null);
   const [pengajuan, setPengajuan] = useState<Pengajuan | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [dialogType, setDialogType] = useState<keyof typeof dialogConfig | null>(null);
   const { toast } = useToast();
   const router = useRouter();
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
@@ -167,6 +168,44 @@ export default function ExchangeRequestDetail({
     }
   };
 
+  const dialogConfig = {
+    hapus: {
+      title: "Konfirmasi Hapus",
+      description: "Apakah Anda yakin ingin menghapus request ini?",
+      actionText: "Hapus",
+      variant: "destructive" as const,
+      onConfirm: handleDeleteExchange,
+    },
+    setuju: {
+      title: "Konfirmasi Setuju",
+      description: "Apakah Anda yakin ingin menyetujui request ini?",
+      actionText: "Setujui",
+      variant: "default" as const,
+      onConfirm: () => handleUpdateStatus("diproses"),
+    },
+    tolak: {
+      title: "Konfirmasi Tolak",
+      description: "Apakah Anda yakin ingin menolak request ini?",
+      actionText: "Tolak",
+      variant: "destructive" as const,
+      onConfirm: () => handleUpdateStatus("ditolak"),
+    },
+    kirim: {
+      title: "Konfirmasi Kirim",
+      description: "Apakah Anda yakin ingin mengirim pesanan ini?",
+      actionText: "Kirim",
+      variant: "default" as const,
+      onConfirm: () => handleUpdateStatus("dikirim"),
+    },
+    terima: {
+      title: "Konfirmasi Terima",
+      description: "Apakah Anda yakin ingin menerima pesanan ini?",
+      actionText: "Terima",
+      variant: "default" as const,
+      onConfirm: () => handleUpdateStatus("diterima"),
+    },
+  };
+
   if (isLoading) return <p>Loading...</p>;
   if (!exchangeRequest) return <p>Exchange request not found.</p>;
 
@@ -178,11 +217,9 @@ export default function ExchangeRequestDetail({
           className="flex items-center text-gray-600 hover:text-blue-800 transition"
         >
           <ArrowLeft className="w-5 h-5 mr-2" />
-          <span>Back</span>
+          <span>Kembali</span>
         </button>
-        <CardTitle className="text-2xl font-bold text-center">
-          Exchange Request
-        </CardTitle>
+        <CardTitle className="text-2xl font-bold text-center">Exchange Request</CardTitle>
         <Status status={exchangeRequest.status} />
       </CardHeader>
 
@@ -192,6 +229,10 @@ export default function ExchangeRequestDetail({
             <div>
               <Label>Product Name</Label>
               <p>{pengajuan.nama_produk}</p>
+            </div>
+            <div>
+              <Label>Product Category</Label>
+              <p>{pengajuan.kategori_produk_detail.nama}</p>
             </div>
             <div>
               <Label>Quantity</Label>
@@ -223,75 +264,68 @@ export default function ExchangeRequestDetail({
       </CardContent>
 
       <CardFooter className="flex flex-wrap gap-2 justify-between">
-    {user?.role === "customer" ? (
-        <>
-        {exchangeRequest.status === "dikirim" && (
-            <Button onClick={() => handleUpdateStatus("diterima")}>
-            Diterima
-            </Button>
-        )}
-
-        {exchangeRequest.status === "diterima" && (
-            <Button onClick={() => router.push(`/penilaian/${pengajuan?.id}`)}>
-            Buat Penilaian
-            </Button>
-        )}
-
-        {exchangeRequest.status === "ditolak" && (
-            <Button variant="destructive" onClick={handleDeleteExchange}>
-            Hapus Exchange
-            </Button>
-        )}
-
-        {exchangeRequest.status !== "diterima" &&
-            exchangeRequest.status !== "dikirim" &&
-            exchangeRequest.status !== "ditolak" && (
-            <>
-                <Button onClick={() => router.push(`/exchange/${exchangeId}/update`)}>
-                Update Exchange
-                </Button>
-                <Button variant="destructive" onClick={handleDeleteExchange}>
-                Hapus Exchange
-                </Button>
-            </>
+        {user?.role === "customer" ? (
+          <>
+            {exchangeRequest.status === "dikirim" && (
+              <Button onClick={() => setDialogType("terima")}>Diterima</Button>
             )}
-        </>
-    ) : (
-        <>
-        {exchangeRequest.status === "diajukan" && (
-            <>
-            <Button onClick={() => handleUpdateStatus("diproses")}>
-                Setujui Exchange
-            </Button>
-            <Button variant="destructive" onClick={() => setConfirmOpen(true)}>
-                Tolak Exchange
-            </Button>
-            </>
+            {exchangeRequest.status === "diterima" && (
+              <Button onClick={() => router.push(`/penilaian/${pengajuan?.id}`)}>
+                Buat Penilaian
+              </Button>
+            )}
+            {exchangeRequest.status === "ditolak" && (
+              <Button variant="destructive" onClick={() => setDialogType("hapus")}>Hapus Exchange</Button>
+            )}
+            {exchangeRequest.status === "diproses" && (
+              <p className="text-sm text-muted-foreground">Menunggu pengiriman dari admin.</p>
+            )}
+            {!["diterima", "dikirim", "ditolak", "diproses"].includes(exchangeRequest.status) && (
+              <>
+                <Button onClick={() => router.push(`/exchange/${exchangeId}/update`)}>
+                  Update Exchange
+                </Button>
+                <Button variant="destructive" onClick={() => setDialogType("hapus")}>Hapus Exchange</Button>
+              </>
+            )}
+          </>
+        ) : (
+          <>
+            {exchangeRequest.status === "diajukan" && (
+              <>
+                <Button onClick={() => setDialogType("setuju")}>Setujui Exchange</Button>
+                <Button variant="destructive" onClick={() => setDialogType("tolak")}>Tolak Exchange</Button>
+              </>
+            )}
+            {exchangeRequest.status === "diproses" && (
+              <Button onClick={() => setDialogType("kirim")}>Kirim Exchange</Button>
+            )}
+          </>
         )}
-        {exchangeRequest.status === "diproses" && (
-            <Button onClick={() => handleUpdateStatus("dikirim")}>
-            Kirim Exchange
-            </Button>
-        )}
-        </>
-    )}
-    </CardFooter>
+      </CardFooter>
 
-
-      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+      <Dialog open={!!dialogType} onOpenChange={() => setDialogType(null)}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Konfirmasi Penolakan</DialogTitle>
-          </DialogHeader>
-          <p className="mb-4">Anda yakin ingin menolak permintaan exchange ini?</p>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmOpen(false)}>
-              Batal
-            </Button>
-            <Button variant="destructive" onClick={() => handleUpdateStatus("ditolak")}>
-              Tolak
-            </Button>
-          </DialogFooter>
+          {dialogType && (
+            <>
+              <DialogHeader>
+                <DialogTitle>{dialogConfig[dialogType].title}</DialogTitle>
+              </DialogHeader>
+              <p className="mb-4">{dialogConfig[dialogType].description}</p>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setDialogType(null)}>Batal</Button>
+                <Button
+                  variant={dialogConfig[dialogType].variant}
+                  onClick={() => {
+                    dialogConfig[dialogType].onConfirm();
+                    setDialogType(null);
+                  }}
+                >
+                  {dialogConfig[dialogType].actionText}
+                </Button>
+              </DialogFooter>
+            </>
+          )}
         </DialogContent>
       </Dialog>
     </Card>

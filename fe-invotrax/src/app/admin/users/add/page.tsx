@@ -116,7 +116,7 @@ export default function UserRegistrationForm() {
             <Link 
             href="#"
             onClick={logout} 
-            className="bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium"
+            className="bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium"
             >
             Logout
             </Link>
@@ -143,7 +143,7 @@ export default function UserRegistrationForm() {
         
         {error && (
           <Alert className="mb-4 bg-red-50 text-red-800 border-red-200">
-            <AlertCircle className="h-4 w-4 text-red-600" />
+            <AlertCircle className="h-4 w-4 text-red-600"/>
             <AlertTitle>Error</AlertTitle>
             <AlertDescription>
               {error}

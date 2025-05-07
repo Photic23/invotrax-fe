@@ -26,9 +26,9 @@ import { Input } from "./ui/input";
 
 interface PenawaranPengadaan {
   id: number;
-  supplier_vendor: { id: number; company_name: string };
+  supplier_vendor_detail: { id: number; company_name: string };
   nama_produk: string;
-  kategori_produk: { id: number; nama: string };
+  kategori_produk_detail: { id: number; nama: string };
   jumlah_produk: number;
   deskripsi_produk: string;
   url_foto_produk: string;
@@ -45,7 +45,10 @@ interface PenawaranPengadaanDetailProps {
 export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPengadaanDetailProps) {
   const [pengadaan, setPengadaan] = useState<PenawaranPengadaan | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [confirmOpen, setConfirmOpen] = useState(false);
+
+  type DialogType = "hapus" | "setuju" | "tolak" | "kirim" | "terima" | null;
+  const [activeDialog, setActiveDialog] = useState<DialogType>(null);
+
   const { toast } = useToast();
   const router = useRouter();
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
@@ -168,7 +171,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
         setPengadaan(prev => prev ? {...prev, status: 'ditolak'} : null);
         toast({
           title: "Sukses",
-          description: "Pengadaan " + status,
+          description: "Pengadaan ditolak",
           variant: "default",
         });
         router.push(`/penawaran-pengadaan/${pengadaanId}/`); // Redirect to detail page
@@ -234,7 +237,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
         setPengadaan({...pengadaan, status: newStatus});
         toast({
           title: "Sukses",
-          description: "Pengadaan " + newStatus,
+          description: "Pengadaan berhasil " + newStatus,
           variant: "default",
         });
         router.push(`/penawaran-pengadaan/${pengadaanId}/`); // Redirect to detail page
@@ -288,6 +291,44 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
       minimumFractionDigits: 2,
     });
 
+  const dialogConfig = {
+    hapus: {
+      title: "Konfirmasi Hapus",
+      description: "Apakah Anda yakin ingin menghapus request ini?",
+      actionText: "Hapus",
+      variant: "destructive" as const,
+      onConfirm: handleDeletePengadaan,
+    },
+    setuju: {
+      title: "Konfirmasi Setuju",
+      description: "Apakah Anda yakin ingin menyetujui request ini?",
+      actionText: "Setujui",
+      variant: "default" as const,
+      onConfirm: () => handleUpdateStatus("diproses"),
+    },
+    tolak: {
+      title: "Konfirmasi Tolak",
+      description: "Apakah Anda yakin ingin menolak request ini?",
+      actionText: "Tolak",
+      variant: "destructive" as const,
+      onConfirm: handleTolak,
+    },
+    kirim: {
+      title: "Konfirmasi Kirim",
+      description: "Apakah Anda yakin ingin mengirim pesanan ini?",
+      actionText: "Kirim",
+      variant: "default" as const,
+      onConfirm: () => handleUpdateStatus("dikirim"),
+    },
+    terima: {
+      title: "Konfirmasi Terima",
+      description: "Apakah Anda yakin ingin menerima pesanan ini?",
+      actionText: "Terima",
+      variant: "default" as const,
+      onConfirm: () => handleUpdateStatus("diterima"),
+    },
+  };
+
 
   const getAdditionalFields = (status: string) => {
     switch (user?.role) {
@@ -296,13 +337,13 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
           case 'diajukan':
             return {
               button1: 
-                <Button onClick={() => handleUpdateStatus('diproses')} disabled={isLoading}>
-                  Setujui Request
-                </Button>, 
+                  <Button onClick={() => setActiveDialog("setuju")} disabled={isLoading}>
+                    Setujui Request
+                  </Button>,
               button2: 
-                <Button onClick={handleTolak} disabled={isLoading}>
-                  Tolak Request
-                </Button>,
+                  <Button variant="destructive" onClick={() => setActiveDialog("tolak")} disabled={isLoading}>
+                    Tolak Request
+                  </Button>,
               field1: 
                 <div>
                   <Label>Harga yang Diajukan (per unit)</Label>
@@ -334,9 +375,9 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
           case 'diproses':
             return {
               button1: 
-                <Button onClick={() => handleUpdateStatus('dikirim')} disabled={isLoading}>
-                  Kirim Pesanan
-                </Button>, 
+                  <Button onClick={() => setActiveDialog("kirim")} disabled={isLoading}>
+                    Kirim Pesanan
+                  </Button>,
               button2: <div></div>,
               field1: 
                 <div>
@@ -416,10 +457,10 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
               <Button onClick={() => router.push(`/penawaran-pengadaan/${pengadaanId}/update`)} disabled={isLoading}>
                 Ubah Request
               </Button>, 
-            button2: 
-              <Button variant="destructive" onClick={() => setConfirmOpen(true)}>
-                Cancel Request
-              </Button>, 
+            button2:
+                <Button variant="destructive" onClick={() => setActiveDialog("hapus")} disabled={isLoading}>
+                  Cancel Request
+                </Button>,
             field1: 
               <div>
                 <Label>Harga yang Diajukan (per unit)</Label>
@@ -451,9 +492,9 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
         case 'dikirim':
           return {
             button1: 
-              <Button onClick={() => handleUpdateStatus('diterima')} disabled={isLoading}>
-                Terima Pesanan
-              </Button>, 
+                <Button onClick={() => setActiveDialog("terima")} disabled={isLoading}>
+                  Terima Request
+                </Button>,
             button2: <div></div>,
             field1: 
               <div>
@@ -497,10 +538,10 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
               <Button onClick={() => router.push(`/penawaran-pengadaan/${pengadaanId}/update`)} disabled={isLoading}>
                 Ubah Request
               </Button>, 
-            button2: 
-              <Button variant="destructive" onClick={() => setConfirmOpen(true)}>
-                Cancel Request
-              </Button>,
+            button2:
+                <Button variant="destructive" onClick={() => setActiveDialog("hapus")} disabled={isLoading}>
+                  Cancel Request
+                </Button>,
             field1: 
               <div>
                 <Label>Harga yang Diajukan (per unit)</Label>
@@ -533,7 +574,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
       <CardContent className="space-y-4 mx-2">
         <div>
           <Label>Nama Supplier</Label>
-          <p>{pengadaan.supplier_vendor.company_name}</p>
+          <p>{pengadaan.supplier_vendor_detail.company_name}</p>
         </div>
         <div>
           <Label>Nama Produk</Label>
@@ -541,7 +582,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
         </div>
         <div>
           <Label>Kategori Produk</Label>
-          <p>{pengadaan.kategori_produk.nama}</p>
+          <p>{pengadaan.kategori_produk_detail.nama}</p>
         </div>
         <div>
           <Label>Jumlah Stok</Label>
@@ -573,18 +614,24 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
         {getAdditionalFields(pengadaan.status)?.button2}
       </CardFooter>
 
-      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+      <Dialog open={!!activeDialog} onOpenChange={() => setActiveDialog(null)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Konfirmasi Hapus</DialogTitle>
+            <DialogTitle>{activeDialog ? dialogConfig[activeDialog].title : ""}</DialogTitle>
           </DialogHeader>
-          <p className="mb-4">Apakah Anda yakin ingin menghapus request ini?</p>
+          <p className="mb-4">{activeDialog ? dialogConfig[activeDialog].description : ""}</p>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmOpen(false)}>
+            <Button variant="outline" onClick={() => setActiveDialog(null)}>
               Batal
             </Button>
-            <Button variant="destructive" onClick={handleDeletePengadaan}>
-              Hapus
+            <Button
+                variant={activeDialog ? dialogConfig[activeDialog].variant : "default"}
+                onClick={() => {
+                  dialogConfig[activeDialog!].onConfirm();
+                  setActiveDialog(null);
+                }}
+            >
+              {activeDialog ? dialogConfig[activeDialog].actionText : ""}
             </Button>
           </DialogFooter>
         </DialogContent>
