@@ -8,33 +8,56 @@ interface StatusProps {
 }
 
 const Status: React.FC<StatusProps> = ({ status }) => {
-    
+
     const getDetailPengadaanStatus = (status: string) => {
         switch (status) {
             case "diajukan":
-                return { label: "Diajukan", icon: <Timer size={16} strokeWidth={1.5}/> };
+                return {
+                    label: "Diajukan",
+                    icon: <Timer size={16} strokeWidth={2}/>,
+                    className: "bg-blue-100 text-blue-800"
+                };
             case "diproses":
-                return { label: "Diproses", icon: <Timer size={16} strokeWidth={1.5}/> };
+                return {
+                    label: "Diproses",
+                    icon: <Timer size={16} strokeWidth={2}/>,
+                    className: "bg-yellow-100 text-yellow-800"
+                };
             case "dikirim":
-                return { label: "Dikirim", icon: <Truck size={16} strokeWidth={1.5}/> };
+                return {
+                    label: "Dikirim",
+                    icon: <Truck size={16} strokeWidth={2}/>,
+                    className: "bg-purple-100 text-purple-800"
+                };
             case "diterima":
-                return { label: "Diterima", icon: <Check size={16} strokeWidth={1.5}/> };
+                return {
+                    label: "Diterima",
+                    icon: <Check size={16} strokeWidth={2}/>,
+                    className: "bg-green-100 text-green-800"
+                };
             case "ditolak":
-                return { label: "Ditolak", icon: <X size={16} strokeWidth={1.5}/> };
+                return {
+                    label: "Ditolak",
+                    icon: <X size={16} strokeWidth={2}/>,
+                    className: "bg-red-100 text-red-800"
+                };
             default:
-                return { label: "Unknown", icon: <Timer size={16} strokeWidth={1.5}/> }; // Default case to handle unexpected values
+                return {
+                    label: "Unknown",
+                    icon: <Timer size={16} strokeWidth={1.5}/>,
+                    className: "bg-gray-100 text-gray-800"
+                }; // Default case to handle unexpected values
         }
-    }
+    };
 
     const statusDetails = getDetailPengadaanStatus(status);
 
     return (
-        <div className="flex gap-2 items-center">
-            {statusDetails.icon} 
-            <p className="text-sm font-bold">{statusDetails.label}</p>
+        <div className={`flex gap-1 items-center px-2 py-1 rounded-lg text-sm font-bold ${statusDetails.className}`}>
+            {statusDetails.icon}
+            <p>{statusDetails.label}</p>
         </div>
     );
 };
 
 export default Status;
-
