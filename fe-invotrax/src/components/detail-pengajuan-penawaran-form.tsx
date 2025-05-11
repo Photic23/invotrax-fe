@@ -483,7 +483,10 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
                 return {
                 status:
                     <Status status={pengajuan.status}/>,
-                button1: <div></div>, 
+                button1: 
+                    <div className="italic text-sm text-muted-foreground">
+                        Pengiriman sedang berlangsung. Menunggu konfirmasi penerimaan dari customer.
+                    </div>,  
                 button2: <div></div>,
                 field1: 
                     <div>
@@ -510,6 +513,10 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
                     <WarrantyStatus warranty_status={pengajuan.status_garansi}/>,
                 status:
                     <Status status={pengajuan.status}/>,
+                button1:
+                    <div className="italic text-sm text-muted-foreground">
+                        Customer telah menerima produk.
+                    </div>, 
                 field1: 
                     <div>
                         <Label>Tanggal Produk Diterima</Label>
@@ -535,7 +542,10 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
                 return {
                 status:
                     <Status status={pengajuan.status}/>,
-                button1: <div></div>, 
+                button1: 
+                    <div className="italic text-sm text-muted-foreground">
+                        Request telah ditolak.
+                    </div>,
                 button2: <div></div>,
                 field1: 
                     <div>
@@ -575,7 +585,10 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
             return {
                 status:
                     <Status status={pengajuan.status}/>,
-                button1: <div></div>, 
+                button1: 
+                    <div className="italic text-sm text-muted-foreground">
+                        Request sedang diproses. Mohon menunggu proses pengiriman dari staf.
+                    </div>,  
                 button2: <div></div>, 
                 field1:
                     <div>

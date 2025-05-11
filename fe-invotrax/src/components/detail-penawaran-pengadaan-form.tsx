@@ -397,7 +397,10 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
             }
           case 'dikirim':
             return {
-              button1: <div></div>, 
+              button1: 
+                <div className="italic text-sm text-muted-foreground">
+                    Pengiriman sedang berlangsung. Menunggu konfirmasi penerimaan dari staf.
+                </div>, 
               button2: <div></div>,
               field1: 
                 <div>
@@ -417,7 +420,10 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
             }
           case 'diterima':
             return {
-              button1: <div></div>, 
+              button1: 
+                <div className="italic text-sm text-muted-foreground">
+                    Staf telah menerima produk.
+                </div>, 
               button2: <div></div>,
               field1: 
                 <div>
@@ -437,7 +443,10 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
             }
           case 'ditolak':
             return {
-              button1: <div></div>, 
+              button1:
+                <div className="italic text-sm text-muted-foreground">
+                    Request telah ditolak.
+                </div>, 
               button2: <div></div>,
               field1: 
                 <div>
@@ -471,7 +480,10 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
           }
         case 'diproses':
           return {
-            button1: <div></div>, 
+            button1: 
+              <div className="italic text-sm text-muted-foreground">
+                  Request sedang diproses. Mohon menunggu proses pengiriman dari vendor.
+              </div>, 
             button2: <div></div>, 
             field1:
               <div>
@@ -514,7 +526,10 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
           }
         case 'diterima':
           return {
-            button1: <div></div>, 
+            button1: 
+              <div className="italic text-sm text-muted-foreground">
+                  Produk telah diterima.
+              </div>,
             button2: <div></div>,
             field1: 
               <div>
