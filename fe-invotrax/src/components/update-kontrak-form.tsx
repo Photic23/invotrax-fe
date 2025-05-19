@@ -207,6 +207,14 @@ export default function UpdateKontrakForm({
     );
   }
 
+  if (!formData.penawaran && !dokumenUrl) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <p>Kontrak tidak ditemukan.</p>
+      </div>
+    );
+  }  
+
   return (
     <Card className="max-w-2xl mx-auto">
       <CardHeader className="relative">
@@ -270,7 +278,7 @@ export default function UpdateKontrakForm({
               <Input
                 value={
                   formData.dokumen_kontrak?.name ||
-                  dokumenUrl.split("/").pop() ||
+                  (dokumenUrl ? dokumenUrl.split("/").pop() : "") ||
                   ""
                 }
                 readOnly
