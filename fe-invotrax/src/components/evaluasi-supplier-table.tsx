@@ -45,6 +45,7 @@ interface EvaluasiSupplier {
   rank: number | string;
   evaluation_allowed: boolean;
   update_allowed: boolean;
+  readonly_detail: boolean;
 }
 
 function useAuthToken() {
@@ -124,7 +125,8 @@ export function EvaluasiSupplierTable() {
       header: "Action",
       cell: ({ row }) => {
         const r = row.original;
-        if (r.evaluation_allowed)
+      
+        if (r.evaluation_allowed) {
           return (
             <Button
               size="sm"
@@ -135,7 +137,9 @@ export function EvaluasiSupplierTable() {
               Evaluasi
             </Button>
           );
-        if (r.update_allowed)
+        }
+      
+        if (r.update_allowed) {
           return (
             <Button
               size="sm"
@@ -146,12 +150,27 @@ export function EvaluasiSupplierTable() {
               Update
             </Button>
           );
+        }
+      
+        if (r.readonly_detail) {
+          return (
+            <Button
+              size="sm"
+              onClick={() =>
+                router.push(`/evaluasi-supplier/${r.evaluation_id}/update`)
+              }
+            >
+              Detail
+            </Button>
+          );
+        }
+      
         return (
           <Button size="sm" disabled>
-            {r.evaluation_id ? "Update" : "Evaluasi"}
+            Evaluasi
           </Button>
         );
-      },      
+      },          
     },
   ];
 
