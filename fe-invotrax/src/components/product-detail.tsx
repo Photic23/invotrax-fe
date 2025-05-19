@@ -21,12 +21,19 @@ import {
 } from "@/components/ui/dialog";
 import { ArrowLeft } from "lucide-react";
 
+interface PenawaranDetail {
+  display_label: string;
+}
+
 interface Product {
   id: number;
   nama: string;
   kategori_detail: { id: number; nama: string };
   vendor_detail: { id: number; company_name: string };
-  kontrak?: string;
+  kontrak_detail?: { 
+    id: number; 
+    penawaran_detail?: PenawaranDetail;
+  };
   stok: number;
   deskripsi: string;
   harga: number;
@@ -121,6 +128,15 @@ export default function ProductDetail({ productId }: ProductDetailProps) {
     }
   };
 
+  const formatKontrak = () => {
+    if (!product?.kontrak_detail) return "Tidak ada data kontrak";
+    
+    const contractId = product.kontrak_detail.id;
+    const displayLabel = product.kontrak_detail.penawaran_detail?.display_label || "";
+    
+    return displayLabel ? `${contractId} {${displayLabel}}` : `${contractId}`;
+  };
+
   if (isLoading) {
     return <p>Loading...</p>;
   }
@@ -158,7 +174,7 @@ export default function ProductDetail({ productId }: ProductDetailProps) {
         </div>
         <div>
           <Label>Kontrak</Label>
-          <p>{product.kontrak || "Tidak ada data kontrak"}</p>
+          <p>{formatKontrak()}</p>
         </div>
         <div>
           <Label>Jumlah Stok Tersedia</Label>
