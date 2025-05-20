@@ -44,6 +44,7 @@ tanggal_garansi: Date;
 
 interface Penilaian {
     rating: number;
+    deskripsi: string;
 }
 
 interface PengajuanPenawaranPengadaanDetailProps {
@@ -508,7 +509,7 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
             case 'diterima':
                 return {
                 rating:
-                    <RatingStatus rating={penilaian?.rating ?? 0} />,
+                    <RatingStatus rating={penilaian?.rating ?? 0} deskripsi={penilaian?.deskripsi ?? ""}/>,
                 warrantystatus:
                     <WarrantyStatus warranty_status={pengajuan.status_garansi}/>,
                 status:
@@ -637,7 +638,7 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
             const isWarrantyValid = pengajuan.status_garansi === 'Berlaku';
             return {
                 rating:
-                <RatingStatus rating={penilaian?.rating ?? 0} />,
+                <RatingStatus rating={penilaian?.rating ?? 0} deskripsi={penilaian?.deskripsi ?? ""}/>,
                 warrantystatus:
                     <WarrantyStatus warranty_status={pengajuan.status_garansi}/>,
                 status:

@@ -1,11 +1,19 @@
 import React from 'react';
 import { Star, X, StarOff } from "lucide-react";
+import {
+    Dialog,
+    DialogTrigger,
+    DialogContent,
+    DialogTitle,
+    DialogDescription,
+} from "@/components/ui/dialog";
 
 interface RatingStatusProps {
     rating: number;
+    deskripsi?: string;
 }
 
-const RatingStatus: React.FC<RatingStatusProps> = ({ rating }) => {
+const RatingStatus: React.FC<RatingStatusProps> = ({ rating, deskripsi }) => {
     
     const getRating = (rating: number) => {
         if (rating === 0) {
@@ -16,7 +24,7 @@ const RatingStatus: React.FC<RatingStatusProps> = ({ rating }) => {
             };
         } else if (rating > 0) {
             return {
-                label: rating,
+                label: `${rating} / 5`,
                 icon: <Star size={16} strokeWidth={2}/>,
                 className: "bg-green-100 text-green-800"
             };
@@ -32,10 +40,32 @@ const RatingStatus: React.FC<RatingStatusProps> = ({ rating }) => {
     const statusDetails = getRating(rating);
 
     return (
-        <div className={`flex gap-1 items-center px-2 py-1 rounded-lg text-sm font-bold ${statusDetails.className}`}>
-            {statusDetails.icon} 
-            <p>{statusDetails.label}</p>
-        </div>
+        <Dialog>
+            <DialogTrigger asChild>
+                <button
+                className={`flex gap-1 items-center px-2 py-1 rounded-lg text-sm font-bold ${statusDetails.className}`}
+                >
+                {statusDetails.icon}
+                <p>{statusDetails.label}</p>
+                </button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogTitle>Penilaian</DialogTitle>
+                <DialogDescription>
+                    {deskripsi ? (
+                        <span className="text-sm mt-2 block text-muted-foreground text-black">
+                            <span className="font-semibold text-base/8">Deskripsi penilaian: </span>
+                            <br/>
+                            {deskripsi}
+                        </span>
+                    ) : (
+                        <span className="text-sm mt-2 block text-muted-foreground">
+                            Tidak ada deskripsi penilaian.
+                        </span>
+                    )}
+                </DialogDescription>
+            </DialogContent>
+        </Dialog>
     );
 };
 
