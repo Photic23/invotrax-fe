@@ -52,15 +52,28 @@ const RatingStatus: React.FC<RatingStatusProps> = ({ rating, deskripsi }) => {
             <DialogContent>
                 <DialogTitle>Penilaian</DialogTitle>
                 <DialogDescription>
-                    {deskripsi ? (
-                        <span className="text-sm mt-2 block text-muted-foreground text-black">
-                            <span className="font-semibold text-base/8">Deskripsi penilaian: </span>
-                            <br/>
-                            {deskripsi}
+                    {rating === 0 && !deskripsi ? (
+                        <span className="text-sm italic text-muted-foreground mt-2 block">
+                        Belum ada penilaian.
                         </span>
                     ) : (
-                        <span className="text-sm mt-2 block text-muted-foreground">
-                            Tidak ada deskripsi penilaian.
+                        <span className="text-sm mt-2 block text-muted-foreground space-y-2">
+                        <span className="text-black block">
+                            <span className="font-semibold text-base">Rating:</span>{" "}
+                            {rating > 0 ? `${rating} / 5` : "-"}
+                        </span>
+
+                        <span className="text-black block ">
+                            <span className="font-semibold text-base">Deskripsi penilaian:</span>
+                            <br />
+                            {deskripsi ? (
+                            deskripsi
+                            ) : (
+                            <span className="italic text-muted-foreground">
+                                Tidak ada deskripsi penilaian.
+                            </span>
+                            )}
+                        </span>
                         </span>
                     )}
                 </DialogDescription>
