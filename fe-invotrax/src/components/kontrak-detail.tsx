@@ -34,6 +34,7 @@ interface PenawaranDetail {
   is_deleted: boolean;
   supplier_vendor: number;
   kategori_produk: number;
+  display_label: string;
 }
 
 interface Kontrak {
@@ -185,7 +186,7 @@ export default function KontrakDetail({ kontrakId }: KontrakDetailProps) {
       <CardContent className="space-y-4">
         <div>
           <Label>Kode Transaksi</Label>
-          <p>{kontrak.penawaran_detail.id}</p>
+          <p>{kontrak.penawaran_detail.display_label}</p>
         </div>
         <div>
           <Label>Tanggal Mulai</Label>

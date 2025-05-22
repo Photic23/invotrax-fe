@@ -135,6 +135,11 @@ export default function Navbar() {
                 description: "Manage Contracts, Duration, and Documents."
               },
               {
+                title: "Evaluasi Supplier",
+                href: "/evaluasi-supplier",
+                description: "Evaluate suppliers and view evaluation records per quarter."
+              },              
+              {
                 title: "My Profile",
                 href: "/customer/profile",
                 description: "View and update your account information."

@@ -23,9 +23,12 @@ import {
 import { ArrowLeft, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+
 interface Penawaran {
   id: number;
   kode_transaksi: string;
+  display_label: string;
 }
 
 export default function CreateKontrakForm() {
@@ -114,28 +117,36 @@ export default function CreateKontrakForm() {
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-
+  
     if (!formData.penawaran) {
       newErrors.penawaran = "Kode transaksi harus dipilih";
     }
-
+  
     if (!formData.start_date) {
       newErrors.start_date = "Tanggal mulai harus diisi";
     }
-
+  
     if (!formData.end_date) {
       newErrors.end_date = "Tanggal berakhir harus diisi";
+    } else if (
+      formData.start_date &&
+      new Date(formData.start_date) >= new Date(formData.end_date)
+    ) {
+      newErrors.end_date = "Tanggal berakhir harus setelah tanggal mulai";
     }
-
+  
     if (!formData.dokumen_kontrak) {
       newErrors.dokumen_kontrak = "Dokumen kontrak harus diunggah";
     } else if (!formData.dokumen_kontrak.name.toLowerCase().endsWith(".pdf")) {
       newErrors.dokumen_kontrak = "Hanya file PDF yang diperbolehkan";
+    } else if (formData.dokumen_kontrak.size > MAX_FILE_SIZE) {
+      newErrors.dokumen_kontrak =
+        "File terlalu besar, mohon unggah di bawah 10 MB";
     }
-
+  
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
+  };  
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, files } = e.target;
@@ -143,7 +154,6 @@ export default function CreateKontrakForm() {
     if (name === "dokumen_kontrak" && files) {
       setFormData((prev) => ({ ...prev, dokumen_kontrak: files[0] }));
       
-      // Reset errors when choosing a new file
       if (errors.dokumen_kontrak) {
         setErrors((prev) => ({ ...prev, dokumen_kontrak: "" }));
       }
@@ -205,21 +215,17 @@ export default function CreateKontrakForm() {
         });
         router.push("/kontrak");
       } else {
-        // Get detailed error information
         let errorDetail = "Gagal membuat kontrak";
         try {
           const errorData = await res.json();
           if (errorData.detail) {
             errorDetail = errorData.detail;
           } else if (errorData.dokumen_kontrak) {
-            // Handle field-specific errors
             errorDetail = `Error dokumen kontrak: ${errorData.dokumen_kontrak}`;
           } else {
-            // Convert error object to string for debugging
             setDebugInfo(JSON.stringify(errorData, null, 2));
           }
         } catch (parseError) {
-          // If can't parse JSON, use status text
           errorDetail = `Error (${res.status}): ${res.statusText}`;
         }
         
@@ -291,7 +297,7 @@ export default function CreateKontrakForm() {
                 {penawarans.length > 0 ? (
                   penawarans.map((p) => (
                     <SelectItem key={p.id} value={p.id.toString()}>
-                      {p.id}
+                      {p.display_label}
                     </SelectItem>
                   ))
                 ) : (
@@ -368,8 +374,7 @@ export default function CreateKontrakForm() {
             )}
             
             <p className="text-xs text-gray-500 mt-1">
-              File harus berformat PDF dan berukuran maksimal 10MB. 
-              Pastikan direktori media memiliki izin yang benar.
+              File PDF maksimal 10 MB.
             </p>
           </div>
         </CardContent>

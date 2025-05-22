@@ -50,6 +50,12 @@ interface Product {
   nama: string;
   kategori_detail: { id: number; nama: string };
   vendor_detail: { id: number; company_name: string };
+  kontrak_detail?: { 
+    id: number; 
+    penawaran_detail?: { 
+      display_label: string 
+    } 
+  };
   stok: number;
   harga: number;
 }
@@ -268,6 +274,18 @@ export default function ProductTable() {
       accessorFn: (row) => row.vendor_detail?.company_name || "-",
       id: "supplier",
       header: "Supplier",
+      enableSorting: true,
+      cell: (info) => info.getValue(),
+    },
+    {
+      accessorFn: (row) => {
+        if (!row.kontrak_detail) return "-";
+        const contractId = row.kontrak_detail.id;
+        const displayLabel = row.kontrak_detail.penawaran_detail?.display_label || "";
+        return displayLabel ? `${contractId} {${displayLabel}}` : `${contractId}`;
+      },
+      id: "kontrak",
+      header: "Kontrak",
       enableSorting: true,
       cell: (info) => info.getValue(),
     },
