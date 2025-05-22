@@ -44,6 +44,7 @@ tanggal_garansi: Date;
 
 interface Penilaian {
     rating: number;
+    deskripsi: string;
 }
 
 interface PengajuanPenawaranPengadaanDetailProps {
@@ -483,7 +484,10 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
                 return {
                 status:
                     <Status status={pengajuan.status}/>,
-                button1: <div></div>, 
+                button1: 
+                    <div className="italic text-sm text-muted-foreground">
+                        Pengiriman sedang berlangsung. Menunggu konfirmasi penerimaan dari customer.
+                    </div>,  
                 button2: <div></div>,
                 field1: 
                     <div>
@@ -505,11 +509,15 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
             case 'diterima':
                 return {
                 rating:
-                    <RatingStatus rating={penilaian?.rating ?? 0} />,
+                    <RatingStatus rating={penilaian?.rating ?? 0} deskripsi={penilaian?.deskripsi ?? ""}/>,
                 warrantystatus:
                     <WarrantyStatus warranty_status={pengajuan.status_garansi}/>,
                 status:
                     <Status status={pengajuan.status}/>,
+                button1:
+                    <div className="italic text-sm text-muted-foreground">
+                        Customer telah menerima produk.
+                    </div>, 
                 field1: 
                     <div>
                         <Label>Tanggal Produk Diterima</Label>
@@ -535,7 +543,10 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
                 return {
                 status:
                     <Status status={pengajuan.status}/>,
-                button1: <div></div>, 
+                button1: 
+                    <div className="italic text-sm text-muted-foreground">
+                        Request telah ditolak.
+                    </div>,
                 button2: <div></div>,
                 field1: 
                     <div>
@@ -575,7 +586,10 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
             return {
                 status:
                     <Status status={pengajuan.status}/>,
-                button1: <div></div>, 
+                button1: 
+                    <div className="italic text-sm text-muted-foreground">
+                        Request sedang diproses. Mohon menunggu proses pengiriman dari staf.
+                    </div>,  
                 button2: <div></div>, 
                 field1:
                     <div>
@@ -624,7 +638,7 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
             const isWarrantyValid = pengajuan.status_garansi === 'Berlaku';
             return {
                 rating:
-                <RatingStatus rating={penilaian?.rating ?? 0} />,
+                <RatingStatus rating={penilaian?.rating ?? 0} deskripsi={penilaian?.deskripsi ?? ""}/>,
                 warrantystatus:
                     <WarrantyStatus warranty_status={pengajuan.status_garansi}/>,
                 status:
