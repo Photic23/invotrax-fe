@@ -4,6 +4,14 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 interface UpdateEvaluasiSupplierFormProps {
   evaluasiId: number;
@@ -40,6 +48,7 @@ const UpdateEvaluasiSupplierForm = ({ evaluasiId }: UpdateEvaluasiSupplierFormPr
   const [isReadOnly, setIsReadOnly] = useState(false);
   const [companyName, setCompanyName] = useState("");
   const [initialLoading, setInitialLoading] = useState(true);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   // Fetch evaluation data
   useEffect(() => {
@@ -140,6 +149,11 @@ const UpdateEvaluasiSupplierForm = ({ evaluasiId }: UpdateEvaluasiSupplierFormPr
       return;
     }
 
+    // Show confirmation modal instead of submitting directly
+    setShowConfirmModal(true);
+  };
+
+  const confirmSubmit = async () => {
     setLoading(true);
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/evaluasi_supplier/evaluasi-supplier/${evaluasiId}/`, {
@@ -189,6 +203,7 @@ const UpdateEvaluasiSupplierForm = ({ evaluasiId }: UpdateEvaluasiSupplierFormPr
       });
     } finally {
       setLoading(false);
+      setShowConfirmModal(false);
     }
   };
 
@@ -311,6 +326,27 @@ const UpdateEvaluasiSupplierForm = ({ evaluasiId }: UpdateEvaluasiSupplierFormPr
           </button>
         </div>
       )}
+
+      {/* Confirmation Modal */}
+      <Dialog open={showConfirmModal} onOpenChange={setShowConfirmModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Konfirmasi Update</DialogTitle>
+          </DialogHeader>
+          <p>Apakah Anda yakin ingin memperbarui evaluasi supplier ini?</p>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowConfirmModal(false)}
+            >
+              Batal
+            </Button>
+            <Button onClick={confirmSubmit} disabled={loading}>
+              {loading ? "Menyimpan..." : "Ya, Perbarui"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </form>
   );
 };
