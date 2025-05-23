@@ -47,6 +47,11 @@ export default function Navbar() {
               title: "Daftar Exchange List",
               href: "/exchange/list",
               description: "Lihat Daftar Exchange Pengadaan."
+            },
+            {
+              title: "Dashboard",
+              href: "dashboard",
+              description: "Lihat Dashboard."
             }
             ];
         case 'staff':
@@ -158,6 +163,11 @@ export default function Navbar() {
                 title: "Daftar Exchange List",
                 href: "/exchange/list",
                 description: "Lihat Daftar Exchange Pengadaan."
+              },
+              {
+                title: "Dashboard",
+                href: "dashboard",
+                description: "Lihat Dashboard."
               }
             ];
       default:
