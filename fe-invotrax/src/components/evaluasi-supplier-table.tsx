@@ -240,6 +240,10 @@ export function EvaluasiSupplierTable() {
             </div>
           </PopoverContent>
         </Popover>
+        
+        <div className="text-base font-semibold text-black">
+          Periode: Q{quarter}, {year}
+        </div>
       </div>
 
       {/* Table */}
