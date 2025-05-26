@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { ArrowLeft } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import Status, { DetailPengadaanStatus } from "./elements/detail/Status";
+import Status from "./elements/detail/Status";
 import { Input } from "./ui/input";
 
 interface PenawaranPengadaan {
@@ -52,7 +52,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
   const { toast } = useToast();
   const router = useRouter();
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-  const { user, isLoggedIn, logout } = useAuth();
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     tanggal_estimasi: new Date().toISOString().split('T')[0], // 'YYYY-MM-DD'
   });  
@@ -95,6 +95,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
     }
   }
 
+  //for handling deletion
   const handleDeletePengadaan = async () => {
     try {
       const response = await fetch(
@@ -134,6 +135,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
     }
   };
 
+  //for handling field change
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -148,6 +150,26 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
     }
   };
 
+  // make sure tanggal estimasi was filled correctly (not before today)
+  const validateForm = () => {
+  const newErrors: Record<string, string> = {};
+
+  if (!formData.tanggal_estimasi) {
+    newErrors.tanggal_estimasi = "Tanggal estimasi harus diisi";
+  } else {
+    const today = new Date().toISOString().split("T")[0];
+    const inputDate = formData.tanggal_estimasi;
+
+    if (inputDate < today) {
+      newErrors.tanggal_estimasi = "Tanggal estimasi tidak boleh sebelum hari ini";
+    }
+  }
+
+  setErrors(newErrors);
+  return Object.keys(newErrors).length === 0;
+  };
+
+  //for handling rejection case
   const handleTolak = async () => {
     setIsLoading(true);
     try {
@@ -196,8 +218,21 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
     }
   }
 
+  // for handling status change per stage
   const handleUpdateStatus = async (newStatus: string) => {
     if (!pengadaan) return;
+
+    if (pengadaan.status === 'diajukan' && user?.role === 'vendor') {
+      if (!validateForm()) {
+        toast({
+          title: "Error",
+          description: "Harap perbaiki kesalahan pada form",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     try {        
       type updatePayload = {
         status: string;
@@ -240,7 +275,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
           description: "Pengadaan berhasil " + newStatus,
           variant: "default",
         });
-        router.push(`/penawaran-pengadaan/${pengadaanId}/`); // Redirect to detail page
+        router.push(`/penawaran-pengadaan/${pengadaanId}/`);    // Redirect to detail page
       } else {
         const errorData = await response.json();
         toast({
@@ -270,6 +305,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
     return <p>Penawaran pengadaan tidak ditemukan.</p>;
   }
 
+  //formatting style
   const formattedDate = pengadaan.tanggal_diterima_dikirim
     ? new Date(pengadaan.tanggal_diterima_dikirim).toLocaleDateString('id-ID', {
     day: 'numeric',
@@ -291,6 +327,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
       minimumFractionDigits: 2,
     });
 
+  //for all modal dialog cases
   const dialogConfig = {
     hapus: {
       title: "Konfirmasi Hapus",
@@ -329,7 +366,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
     },
   };
 
-
+  // for showing different fields and actionable per stages and per roles (vendor vs staff/manager)
   const getAdditionalFields = (status: string) => {
     switch (user?.role) {
       case 'vendor':
@@ -362,15 +399,14 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
                         : ''
                     }                    
                     onChange={handleChange}
+                    min={new Date().toISOString().split("T")[0]}
                     placeholder="Masukkan estimasi tanggal pengiriman produk"
-                    min="0"
-                    className={errors.harga ? "border-red-500" : ""}
+                    className={errors.tanggal_estimasi ? "border-red-500" : ""}
                   />
-                  {errors.harga && (
-                    <p className="text-sm text-red-500">{errors.harga}</p>
+                  {errors.tanggal_estimasi && (
+                    <p className="text-sm text-red-500">{errors.tanggal_estimasi}</p>
                   )}
-                </div>,
-              field3: <div></div>
+                </div>
             }
           case 'diproses':
             return {
@@ -378,7 +414,6 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
                   <Button onClick={() => setActiveDialog("kirim")} disabled={isLoading}>
                     Kirim Pesanan
                   </Button>,
-              button2: <div></div>,
               field1: 
                 <div>
                   <Label>Estimasi Tanggal Produk Dikirim</Label>
@@ -401,7 +436,6 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
                 <div className="italic text-sm text-muted-foreground">
                     Pengiriman sedang berlangsung. Menunggu konfirmasi penerimaan dari staf.
                 </div>, 
-              button2: <div></div>,
               field1: 
                 <div>
                   <Label>Tanggal Produk Dikirim</Label>
@@ -424,7 +458,6 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
                 <div className="italic text-sm text-muted-foreground">
                     Staf telah menerima produk.
                 </div>, 
-              button2: <div></div>,
               field1: 
                 <div>
                   <Label>Tanggal Produk Diterima</Label>
@@ -447,125 +480,116 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
                 <div className="italic text-sm text-muted-foreground">
                     Request telah ditolak.
                 </div>, 
-              button2: <div></div>,
               field1: 
                 <div>
                   <Label>Harga yang Diajukan (per unit)</Label>
                   <p>{formatHarga(pengadaan.harga_diajukan)}</p>
-                </div>,
-              field2: <div></div>,
-              field3: <div></div>
+                </div>
             }
         }
-      case 'staff':
-      //case 'manager':
-      switch (status) {
-        case 'diajukan':
-          return {
-            button1: 
-              <Button onClick={() => router.push(`/penawaran-pengadaan/${pengadaanId}/update`)} disabled={isLoading}>
-                Ubah Request
-              </Button>, 
-            button2:
-                <Button variant="destructive" onClick={() => setActiveDialog("hapus")} disabled={isLoading}>
-                  Cancel Request
-                </Button>,
-            field1: 
-              <div>
-                <Label>Harga yang Diajukan (per unit)</Label>
-                <p>{formatHarga(pengadaan.harga_diajukan)}</p>
-              </div>,
-            field2: <div></div>,
-            field3: <div></div>
-          }
-        case 'diproses':
-          return {
-            button1: 
-              <div className="italic text-sm text-muted-foreground">
-                  Request sedang diproses. Mohon menunggu proses pengiriman dari vendor.
-              </div>, 
-            button2: <div></div>, 
-            field1:
-              <div>
-                <Label>Estimasi Tanggal Produk Dikirim</Label>
-                <p>{formattedEstimateDate}</p>
-              </div>,
-            field2: 
-              <div>
-                <Label>Harga yang Diterima (per unit)</Label>
-                <p>{formatHarga(pengadaan.harga_diajukan)}</p>
-              </div>,
-            field3: 
-              <div>
-                <Label>Total Harga</Label>
-                <p>{formatHarga(pengadaan.harga_diajukan * pengadaan.jumlah_produk)}</p>
-              </div>
-          }
-        case 'dikirim':
-          return {
-            button1: 
-                <Button onClick={() => setActiveDialog("terima")} disabled={isLoading}>
-                  Terima Request
-                </Button>,
-            button2: <div></div>,
-            field1: 
-              <div>
-                <Label>Tanggal Produk Dikirim</Label>
-                <p>{formattedDate}</p>
-              </div>,
-            field2: 
-              <div>
-                <Label>Harga yang Diterima (per unit)</Label>
-                <p>{formatHarga(pengadaan.harga_diajukan)}</p>
-              </div>,
-            field3: 
-              <div>
-                <Label>Total Harga</Label>
-                <p>{formatHarga(pengadaan.harga_diajukan * pengadaan.jumlah_produk)}</p>
-              </div>
-          }
-        case 'diterima':
-          return {
-            button1: 
-              <div className="italic text-sm text-muted-foreground">
-                  Produk telah diterima.
-              </div>,
-            button2: <div></div>,
-            field1: 
-              <div>
-                <Label>Tanggal Produk Diterima</Label>
-                <p>{formattedDate}</p>
-              </div>,
-            field2: 
-              <div>
-                <Label>Harga yang Diterima (per unit)</Label>
-                <p>{formatHarga(pengadaan.harga_diajukan)}</p>
-              </div>,
-            field3: 
-              <div>
-                <Label>Total Harga</Label>
-                <p>{formatHarga(pengadaan.harga_diajukan * pengadaan.jumlah_produk)}</p>
-              </div>
-          }
-        case 'ditolak':
-          return {
-            button1: 
-              <Button onClick={() => router.push(`/penawaran-pengadaan/${pengadaanId}/update`)} disabled={isLoading}>
-                Ubah Request
-              </Button>, 
-            button2:
-                <Button variant="destructive" onClick={() => setActiveDialog("hapus")} disabled={isLoading}>
-                  Cancel Request
-                </Button>,
-            field1: 
-              <div>
-                <Label>Harga yang Diajukan (per unit)</Label>
-                <p>{formatHarga(pengadaan.harga_diajukan)}</p>
-              </div>,
-            field2: <div></div>,
-            field3: <div></div>
-          }
-      }
+
+      case 'staff':     //staff and manager have same accessibility
+      case 'manager':
+        switch (status) {
+          case 'diajukan':
+            return {
+              button1: 
+                <Button onClick={() => router.push(`/penawaran-pengadaan/${pengadaanId}/update`)} disabled={isLoading}>
+                  Ubah Request
+                </Button>, 
+              button2:
+                  <Button variant="destructive" onClick={() => setActiveDialog("hapus")} disabled={isLoading}>
+                    Cancel Request
+                  </Button>,
+              field1: 
+                <div>
+                  <Label>Harga yang Diajukan (per unit)</Label>
+                  <p>{formatHarga(pengadaan.harga_diajukan)}</p>
+                </div>
+            }
+          case 'diproses':
+            return {
+              button1: 
+                <div className="italic text-sm text-muted-foreground">
+                    Request sedang diproses. Mohon menunggu proses pengiriman dari vendor.
+                </div>, 
+              field1:
+                <div>
+                  <Label>Estimasi Tanggal Produk Dikirim</Label>
+                  <p>{formattedEstimateDate}</p>
+                </div>,
+              field2: 
+                <div>
+                  <Label>Harga yang Diterima (per unit)</Label>
+                  <p>{formatHarga(pengadaan.harga_diajukan)}</p>
+                </div>,
+              field3: 
+                <div>
+                  <Label>Total Harga</Label>
+                  <p>{formatHarga(pengadaan.harga_diajukan * pengadaan.jumlah_produk)}</p>
+                </div>
+            }
+          case 'dikirim':
+            return {
+              button1: 
+                  <Button onClick={() => setActiveDialog("terima")} disabled={isLoading}>
+                    Terima Request
+                  </Button>,
+              field1: 
+                <div>
+                  <Label>Tanggal Produk Dikirim</Label>
+                  <p>{formattedDate}</p>
+                </div>,
+              field2: 
+                <div>
+                  <Label>Harga yang Diterima (per unit)</Label>
+                  <p>{formatHarga(pengadaan.harga_diajukan)}</p>
+                </div>,
+              field3: 
+                <div>
+                  <Label>Total Harga</Label>
+                  <p>{formatHarga(pengadaan.harga_diajukan * pengadaan.jumlah_produk)}</p>
+                </div>
+            }
+          case 'diterima':
+            return {
+              button1: 
+                <div className="italic text-sm text-muted-foreground">
+                    Produk telah diterima.
+                </div>,
+              field1: 
+                <div>
+                  <Label>Tanggal Produk Diterima</Label>
+                  <p>{formattedDate}</p>
+                </div>,
+              field2: 
+                <div>
+                  <Label>Harga yang Diterima (per unit)</Label>
+                  <p>{formatHarga(pengadaan.harga_diajukan)}</p>
+                </div>,
+              field3: 
+                <div>
+                  <Label>Total Harga</Label>
+                  <p>{formatHarga(pengadaan.harga_diajukan * pengadaan.jumlah_produk)}</p>
+                </div>
+            }
+          case 'ditolak':
+            return {
+              button1: 
+                <Button onClick={() => router.push(`/penawaran-pengadaan/${pengadaanId}/update`)} disabled={isLoading}>
+                  Ubah Request
+                </Button>, 
+              button2:
+                  <Button variant="destructive" onClick={() => setActiveDialog("hapus")} disabled={isLoading}>
+                    Cancel Request
+                  </Button>,
+              field1: 
+                <div>
+                  <Label>Harga yang Diajukan (per unit)</Label>
+                  <p>{formatHarga(pengadaan.harga_diajukan)}</p>
+                </div>
+            }
+        }
       default:
         return
     }
@@ -629,6 +653,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
         {getAdditionalFields(pengadaan.status)?.button2}
       </CardFooter>
 
+      {/* Modal for all confirmation needed to move between stages */}
       <Dialog open={!!activeDialog} onOpenChange={() => setActiveDialog(null)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -653,8 +678,4 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
       </Dialog>
     </Card>
   );
-}
-
-function elif(arg0: boolean) {
-  throw new Error("Function not implemented.");
 }
