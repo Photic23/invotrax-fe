@@ -536,6 +536,23 @@ export default function PengajuanPenawaranPengadaanDetail({ pengajuanId }: Penga
                                 <Label>Total Harga</Label>
                                 <p>{formatHarga(pengajuan.harga_diajukan * pengajuan.jumlah_produk)}</p>
                             </div>,
+                        field4: 
+                            <div className="space-y-2">
+                                <Label htmlFor="durasi_garansi">Durasi Garansi (hari)</Label>
+                                <Input
+                                    id="durasi_garansi"
+                                    name="durasi_garansi"
+                                    type="number"
+                                    value={formData.durasi_garansi}
+                                    onChange={handleChange}
+                                    placeholder="Masukkan durasi garansi dalam hari"
+                                    min="1"
+                                    className={errors.durasi_garansi ? "border-red-500" : ""}
+                                />
+                                {errors.durasi_garansi && (
+                                    <p className="text-sm text-red-500">{errors.durasi_garansi}</p>
+                                )}
+                            </div>
                         }
                     case 'dikirim':
                         return {
@@ -559,6 +576,11 @@ export default function PengajuanPenawaranPengadaanDetail({ pengajuanId }: Penga
                             <div>
                                 <Label>Total Harga</Label>
                                 <p>{formatHarga(pengajuan.harga_diajukan * pengajuan.jumlah_produk)}</p>     
+                            </div>,
+                        field4: 
+                            <div>
+                                <Label>Durasi Garansi</Label>
+                                <p>{pengajuan.durasi_garansi ? `${pengajuan.durasi_garansi} hari` : '-'}</p>
                             </div>
                         }
                     case 'diterima':
@@ -779,7 +801,9 @@ export default function PengajuanPenawaranPengadaanDetail({ pengajuanId }: Penga
         <CardContent className="space-y-4 mx-2">
             <div>
                 <Label>Nama Supplier</Label>
-                <p>{pengajuan.supplier_vendor_detail.company_name}</p>
+                {pengajuan.supplier_vendor_detail?.company_name && (
+                        <p>{pengajuan.supplier_vendor_detail.company_name}</p>
+                )}
             </div>
             <div>
                 <Label>Nama Produk</Label>
@@ -787,7 +811,9 @@ export default function PengajuanPenawaranPengadaanDetail({ pengajuanId }: Penga
             </div>
             <div>
                 <Label>Kategori Produk</Label>
-                <p>{pengajuan.kategori_produk_detail.nama}</p>
+                {pengajuan.kategori_produk_detail?.nama && (
+                        <p>{pengajuan.kategori_produk_detail.nama}</p>
+                )}
             </div>
             <div>
                 <Label>Jumlah Stok</Label>
