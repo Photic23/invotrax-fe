@@ -27,19 +27,20 @@ import WarrantyStatus from "./elements/detail/WarrantyStatus";
 import RatingStatus from "./elements/detail/RatingStatus";
 
 interface PengajuanPenawaranPengadaan {
-id: number;
-supplier_vendor_detail: { id: number; company_name: string };
-nama_produk: string;
-kategori_produk_detail: { id: number; nama: string };
-jumlah_produk: number;
-deskripsi_produk: string;
-url_foto_produk: string;
-harga_diajukan: number;
-tanggal_estimasi: Date;
-tanggal_diterima_dikirim: Date;
-status: string;
-status_garansi: string;
-tanggal_garansi: Date;
+    id: number;
+    supplier_vendor_detail: { id: number; company_name: string };
+    nama_produk: string;
+    kategori_produk_detail: { id: number; nama: string };
+    jumlah_produk: number;
+    deskripsi_produk: string;
+    url_foto_produk: string;
+    harga_diajukan: number;
+    tanggal_estimasi: Date;
+    tanggal_diterima_dikirim: Date;
+    tanggal_garansi: Date;
+    durasi_garansi: number;
+    status: string;
+    status_garansi: string;
 }
 
 interface Penilaian {
@@ -48,10 +49,10 @@ interface Penilaian {
 }
 
 interface PengajuanPenawaranPengadaanDetailProps {
-pengajuanId: number;
+    pengajuanId: number;
 }
 
-export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: PengajuanPenawaranPengadaanDetailProps) {
+export default function PengajuanPenawaranPengadaanDetail({ pengajuanId }: PengajuanPenawaranPengadaanDetailProps) {
     const [pengajuan, setPengajuan] = useState<PengajuanPenawaranPengadaan | null>(null);
     const [penilaian, setPenilaian] = useState<Penilaian | null>(null);
     const [exchangeExists, setExchangeExists] = useState(false);
@@ -65,11 +66,16 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
     const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
     const { user } = useAuth();
     const [formData, setFormData] = useState({
-        tanggal_estimasi: new Date().toISOString().split('T')[0], // 'YYYY-MM-DD'
-    });  
+        tanggal_estimasi: new Date().toISOString().split('T')[0],
+        durasi_garansi: 30, // Default 30 days
+    });
     const [errors, setErrors] = useState<Record<string, string>>({});
 
-    useEffect(() => { fetchPengajuanDetail(); fetchPenilaian(); fetchExchange();}, [pengajuanId, token, toast]);
+    useEffect(() => { 
+        fetchPengajuanDetail(); 
+        fetchPenilaian(); 
+        fetchExchange();
+    }, [pengajuanId, token, toast]);
 
     async function fetchPengajuanDetail() {
         try {
@@ -87,6 +93,13 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
             if (response.ok) {
                 const data = await response.json();
                 setPengajuan(data);
+                // Update form data with existing durasi_garansi if available
+                if (data.durasi_garansi) {
+                    setFormData(prev => ({
+                        ...prev,
+                        durasi_garansi: data.durasi_garansi
+                    }));
+                }
             } else {
                 toast({
                     title: "Error",
@@ -117,7 +130,6 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
             });
 
             if (response.status === 204) {
-                // penilaian doesn't exist yet
                 setPenilaian(null);
                 return;
             }
@@ -127,7 +139,6 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
             const text = await response.text();
 
             if (!text) {
-                // no JSON body
                 setPenilaian(null);
                 return;
             }
@@ -136,38 +147,37 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
             setPenilaian(data);
         } catch (error) {
             console.error("Error fetching penilaian:", error);
-            setPenilaian(null); // Fallback
-            // toast can be optional if the error is not critical
+            setPenilaian(null);
         }
     };
 
     //fetch exchange for check existence
     const fetchExchange = async () => {
         try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/layanan_pasca_beli/exchange-request/by_pengajuan/${pengajuanId}/`, {
-            headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-            },
-        });
-    
-        if (response.ok) {
-            const text = await response.text();
-            console.log("Exchange response:", response.status, text);
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/layanan_pasca_beli/exchange-request/by_pengajuan/${pengajuanId}/`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            });
 
-            if (text) {
-            setExchangeExists(true);
+            if (response.ok) {
+                const text = await response.text();
+                console.log("Exchange response:", response.status, text);
+
+                if (text) {
+                    setExchangeExists(true);
+                } else {
+                    setExchangeExists(false);
+                }
+            } else if (response.status === 404 || response.status === 204) {
+                setExchangeExists(false);
             } else {
-            setExchangeExists(false);
+                throw new Error("Failed to fetch exchange");
             }
-        } else if (response.status === 404 || response.status === 204) {
-            setExchangeExists(false);
-        } else {
-            throw new Error("Failed to fetch exchange");
-        }
         } catch (error) {
-        console.error("Error fetching exchange:", error);
-        setExchangeExists(false); // fallback
+            console.error("Error fetching exchange:", error);
+            setExchangeExists(false);
         }
     };
     
@@ -177,27 +187,27 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
             const response = await fetch(
                 `${process.env.NEXT_PUBLIC_API_URL}/api/pengajuan/pengajuan_penawaran_pengadaan/${pengajuanId}/`,
                 {
-                method: "DELETE",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                },
+                    method: "DELETE",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
                 }
             );
 
             if (response.ok) {
                 toast({
-                title: "Sukses",
-                description: "Request berhasil dihapus",
-                variant: "default",
+                    title: "Sukses",
+                    description: "Request berhasil dihapus",
+                    variant: "default",
                 });
-                router.push(`/pengajuan_penawaran_pengadaan`); 
+                router.push(`/pengajuan_penawaran_pengadaan`);
             } else {
                 const errorData = await response.json();
                 toast({
-                title: "Error",
-                description: "Gagal menghapus request",
-                variant: "destructive",
+                    title: "Error",
+                    description: "Gagal menghapus request",
+                    variant: "destructive",
                 });
                 console.error("Delete error:", errorData);
             }
@@ -215,11 +225,11 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
-        
+
         // Clear error when field is edited
         if (errors[name]) {
             setErrors(prev => {
-                const newErrors = {...prev};
+                const newErrors = { ...prev };
                 delete newErrors[name];
                 return newErrors;
             });
@@ -266,13 +276,13 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
             );
 
             if (response.ok) {
-                setPengajuan(prev => prev ? {...prev, status: 'ditolak'} : null);
+                setPengajuan(prev => prev ? { ...prev, status: 'ditolak' } : null);
                 toast({
                     title: "Sukses",
                     description: "Pengajuan ditolak",
                     variant: "default",
                 });
-                router.push(`/pengajuan_penawaran_pengadaan/${pengajuanId}/`); // Redirect to detail page
+                router.push(`/pengajuan_penawaran_pengadaan/${pengajuanId}/`);
             } else {
                 const errorData = await response.json();
                 toast({
@@ -314,20 +324,29 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
                 status: string;
                 tanggal_estimasi?: string;
                 tanggal_diterima_dikirim?: string;
-            };    
+                durasi_garansi?: number;
+            };
             let payload: updatePayload = {
                 status: newStatus
             };
 
             if (pengajuan?.status === 'diajukan') {
                 payload = {
-                ...payload,
-                tanggal_estimasi: formData.tanggal_estimasi
+                    ...payload,
+                    tanggal_estimasi: formData.tanggal_estimasi
                 }
-            } else if (pengajuan?.status === 'diproses' || pengajuan?.status === 'dikirim') {
+            } else if (pengajuan?.status === 'diproses' && newStatus === 'dikirim') {
+                // When staff sends the order, include durasi_garansi
                 payload = {
-                ...payload,
-                tanggal_diterima_dikirim: new Date().toISOString().split("T")[0],
+                    ...payload,
+                    durasi_garansi: Number(formData.durasi_garansi),
+                    tanggal_diterima_dikirim: new Date().toISOString().split("T")[0],
+                }
+            } else if (pengajuan?.status === 'dikirim' && newStatus === 'diterima') {
+                // When customer accepts, tanggal_garansi will be calculated automatically in backend
+                payload = {
+                    ...payload,
+                    tanggal_diterima_dikirim: new Date().toISOString().split("T")[0],
                 }
             }
 
@@ -336,21 +355,22 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
                 {
                     method: "PATCH",
                     headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json",
                     },
                     body: JSON.stringify(payload),
                 }
             );
 
             if (response.ok) {
-                setPengajuan({...pengajuan, status: newStatus})
+                const updatedData = await response.json();
+                setPengajuan(updatedData);
                 toast({
                     title: "Sukses",
                     description: "Pengajuan berhasil " + newStatus,
                     variant: "default",
                 });
-                router.push(`/pengajuan_penawaran_pengadaan/${pengajuanId}/`); // Redirect to detail page
+                router.push(`/pengajuan_penawaran_pengadaan/${pengajuanId}/`);
             } else {
                 const errorData = await response.json();
                 toast({
@@ -370,7 +390,7 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
         } finally {
             setIsLoading(false);
         }
-        }
+    }
 
     if (isLoading) {
         return <p>Loading...</p>;
@@ -383,24 +403,24 @@ export default function PengajuanPenawaranPengadaanDetail ({ pengajuanId }: Peng
     //formatting style
     const formattedDate = pengajuan.tanggal_diterima_dikirim
         ? new Date(pengajuan.tanggal_diterima_dikirim).toLocaleDateString('id-ID', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-    }) : '-';
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        }) : '-';
 
     const formattedEstimateDate = pengajuan.tanggal_estimasi
         ? new Date(pengajuan.tanggal_estimasi).toLocaleDateString('id-ID', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-    }) : '-';
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        }) : '-';
 
     const formattedWarrantyDate = pengajuan.tanggal_garansi
         ? new Date(pengajuan.tanggal_garansi).toLocaleDateString('id-ID', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-    }) : '-';
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        }) : '-';
 
     const formatHarga = (value: string | number) =>
         Number(value).toLocaleString("id-ID", {

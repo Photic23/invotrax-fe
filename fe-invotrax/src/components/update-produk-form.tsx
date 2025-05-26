@@ -44,6 +44,19 @@ interface Supplier {
   role?: string;
 }
 
+interface PenawaranDetail {
+  display_label: string;
+}
+
+interface Kontrak {
+  id: number;
+  penawaran_detail: PenawaranDetail | null;
+  supplier_company_name?: string;
+  start_date: string;
+  end_date: string;
+  status: string;
+}
+
 interface UpdateProductFormProps {
   productId: number;
 }
@@ -58,6 +71,7 @@ export default function UpdateProductForm({
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [contracts, setContracts] = useState<Kontrak[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isInitialLoading, setIsInitialLoading] = useState(true);
@@ -70,6 +84,7 @@ export default function UpdateProductForm({
     nama: "",
     kategori: "",
     vendor: "",
+    kontrak: "",
     stok: "",
     deskripsi: "",
     harga: "",
@@ -155,11 +170,26 @@ export default function UpdateProductForm({
         const suppliersData = await suppliersResponse.json();
         setSuppliers(suppliersData);
 
+        // Fetch contracts
+        const contractsResponse = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/manajemen_kontrak/kontrak/daftar_kontrak/`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        const contractsData = await contractsResponse.json();
+        setContracts(contractsData);
+
         // Set form data with product details
         setFormData({
           nama: productData.nama,
           kategori: productData.kategori_detail.id.toString(),
           vendor: productData.vendor_detail.id.toString(),
+          kontrak: productData.kontrak_detail?.id.toString() || "",
           stok: productData.stok.toString(),
           deskripsi: productData.deskripsi || "",
           harga: productData.harga.toString().replace(".00", ""),
@@ -203,6 +233,10 @@ export default function UpdateProductForm({
 
     if (!formData.vendor) {
       newErrors.vendor = "Supplier harus dipilih";
+    }
+
+    if (!formData.kontrak) {
+      newErrors.kontrak = "Kontrak harus dipilih";
     }
 
     if (!formData.stok || parseInt(formData.stok) < 0) {
@@ -275,6 +309,7 @@ export default function UpdateProductForm({
         nama: formData.nama,
         kategori: parseInt(formData.kategori),
         vendor: parseInt(formData.vendor),
+        kontrak: parseInt(formData.kontrak),
         stok: parseInt(formData.stok),
         deskripsi: formData.deskripsi,
         harga: parseInt(formData.harga),
@@ -422,6 +457,28 @@ export default function UpdateProductForm({
             </Select>
             {errors.vendor && (
               <p className="text-sm text-red-500">{errors.vendor}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="kontrak">Kontrak</Label>
+            <Select
+              value={formData.kontrak}
+              onValueChange={(value) => handleSelectChange("kontrak", value)}
+            >
+              <SelectTrigger className={errors.kontrak ? "border-red-500" : ""}>
+                <SelectValue placeholder="Pilih kontrak" />
+              </SelectTrigger>
+              <SelectContent>
+                {contracts.map((contract) => (
+                  <SelectItem key={contract.id} value={contract.id.toString()}>
+                    {contract.id} {contract.penawaran_detail?.display_label ? `{${contract.penawaran_detail.display_label}}` : ''}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.kontrak && (
+              <p className="text-sm text-red-500">{errors.kontrak}</p>
             )}
           </div>
 

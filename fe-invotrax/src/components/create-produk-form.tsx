@@ -39,6 +39,19 @@ interface Supplier {
   role: string;
 }
 
+interface PenawaranDetail {
+  display_label: string;
+}
+
+interface Kontrak {
+  id: number;
+  penawaran_detail: PenawaranDetail | null;
+  supplier_company_name?: string;
+  start_date: string;
+  end_date: string;
+  status: string;
+}
+
 export default function CreateProductForm() {
   const token = localStorage.getItem("token");
   const router = useRouter();
@@ -46,6 +59,7 @@ export default function CreateProductForm() {
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [contracts, setContracts] = useState<Kontrak[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
@@ -54,6 +68,7 @@ export default function CreateProductForm() {
     nama: "",
     kategori: "",
     vendor: "",
+    kontrak: "",
     stok: "",
     deskripsi: "",
     harga: "",
@@ -102,11 +117,25 @@ export default function CreateProductForm() {
         );
         const suppliersData = await suppliersResponse.json();
         setSuppliers(suppliersData);
+
+        // Fetch contracts
+        const contractsResponse = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/manajemen_kontrak/kontrak/daftar_kontrak/`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        const contractsData = await contractsResponse.json();
+        setContracts(contractsData);
       } catch (error) {
         console.error("Error fetching data:", error);
         toast({
           title: "Error",
-          description: "Gagal mengambil data kategori atau supplier",
+          description: "Gagal mengambil data kategori, supplier, atau kontrak",
           variant: "destructive",
         });
       }
@@ -128,6 +157,10 @@ export default function CreateProductForm() {
 
     if (!formData.vendor) {
       newErrors.vendor = "Supplier harus dipilih";
+    }
+
+    if (!formData.kontrak) {
+      newErrors.kontrak = "Kontrak harus dipilih";
     }
 
     if (!formData.stok || parseInt(formData.stok) < 0) {
@@ -195,6 +228,7 @@ export default function CreateProductForm() {
         nama: formData.nama,
         kategori: parseInt(formData.kategori),
         vendor: parseInt(formData.vendor),
+        kontrak: parseInt(formData.kontrak),
         stok: parseInt(formData.stok),
         deskripsi: formData.deskripsi,
         harga: parseInt(formData.harga),
@@ -325,6 +359,28 @@ export default function CreateProductForm() {
             </Select>
             {errors.vendor && (
               <p className="text-sm text-red-500">{errors.vendor}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="kontrak">Kontrak</Label>
+            <Select
+              value={formData.kontrak}
+              onValueChange={(value) => handleSelectChange("kontrak", value)}
+            >
+              <SelectTrigger className={errors.kontrak ? "border-red-500" : ""}>
+                <SelectValue placeholder="Pilih kontrak" />
+              </SelectTrigger>
+              <SelectContent>
+                {contracts.map((contract) => (
+                  <SelectItem key={contract.id} value={contract.id.toString()}>
+                    {contract.id} {contract.penawaran_detail?.display_label ? `{${contract.penawaran_detail.display_label}}` : ''}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.kontrak && (
+              <p className="text-sm text-red-500">{errors.kontrak}</p>
             )}
           </div>
 

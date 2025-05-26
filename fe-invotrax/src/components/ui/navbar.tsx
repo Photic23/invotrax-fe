@@ -47,6 +47,11 @@ export default function Navbar() {
               title: "Daftar Exchange List",
               href: "/exchange/list",
               description: "Lihat Daftar Exchange Pengadaan."
+            },
+            {
+              title: "Dashboard",
+              href: "dashboard",
+              description: "Lihat Dashboard."
             }
             ];
         case 'staff':
@@ -135,6 +140,11 @@ export default function Navbar() {
                 description: "Manage Contracts, Duration, and Documents."
               },
               {
+                title: "Evaluasi Supplier",
+                href: "/evaluasi-supplier",
+                description: "Evaluate suppliers and view evaluation records per quarter."
+              },              
+              {
                 title: "My Profile",
                 href: "/customer/profile",
                 description: "View and update your account information."
@@ -153,6 +163,11 @@ export default function Navbar() {
                 title: "Daftar Exchange List",
                 href: "/exchange/list",
                 description: "Lihat Daftar Exchange Pengadaan."
+              },
+              {
+                title: "Dashboard",
+                href: "dashboard",
+                description: "Lihat Dashboard."
               }
             ];
       default:

@@ -22,6 +22,8 @@ import {
 } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
 
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+
 interface UpdateKontrakFormProps {
   kontrakId: number;
 }
@@ -46,6 +48,7 @@ export default function UpdateKontrakForm({
     dokumen_kontrak: null as File | null,
   });
   const [dokumenUrl, setDokumenUrl] = useState<string>("");
+  const [penawaranLabel, setPenawaranLabel] = useState<string>("");
 
   const fetchInitialData = async () => {
     try {
@@ -58,6 +61,10 @@ export default function UpdateKontrakForm({
         }
       );
       const kontrak = await kontrakRes.json();
+      
+      setPenawaranLabel(
+        kontrak.penawaran_detail?.display_label ?? `ID ${kontrak.penawaran}`
+      );
 
       const currentPenawaranId =
         kontrak.penawaran ?? kontrak.penawaran_detail?.id ?? null;
@@ -87,29 +94,36 @@ export default function UpdateKontrakForm({
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-
-    if (!formData.penawaran) {
-      newErrors.penawaran = "Kode transaksi harus dipilih";
-    }
-
+  
     if (!formData.start_date) {
       newErrors.start_date = "Tanggal mulai harus diisi";
     }
-
+  
     if (!formData.end_date) {
       newErrors.end_date = "Tanggal berakhir harus diisi";
+    } else if (
+      formData.start_date &&
+      new Date(formData.start_date) >= new Date(formData.end_date)
+    ) {
+      newErrors.end_date = "Tanggal berakhir harus setelah tanggal mulai";
     }
-
+  
     if (
       formData.dokumen_kontrak &&
       !formData.dokumen_kontrak.name.toLowerCase().endsWith(".pdf")
     ) {
       newErrors.dokumen_kontrak = "Hanya file PDF yang diperbolehkan";
+    } else if (
+      formData.dokumen_kontrak &&
+      formData.dokumen_kontrak.size > MAX_FILE_SIZE
+    ) {
+      newErrors.dokumen_kontrak =
+        "File terlalu besar, mohon unggah di bawah 10 MB";
     }
-
+  
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
+  };  
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, files } = e.target;
@@ -193,6 +207,14 @@ export default function UpdateKontrakForm({
     );
   }
 
+  if (!formData.penawaran && !dokumenUrl) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <p>Kontrak tidak ditemukan.</p>
+      </div>
+    );
+  }  
+
   return (
     <Card className="max-w-2xl mx-auto">
       <CardHeader className="relative">
@@ -213,7 +235,7 @@ export default function UpdateKontrakForm({
           <div className="space-y-2">
             <Label>Kode Transaksi</Label>
             <Input
-              value={formData.penawaran}
+              value={penawaranLabel}
               readOnly
               className="cursor-not-allowed bg-gray-100"
             />
@@ -256,7 +278,7 @@ export default function UpdateKontrakForm({
               <Input
                 value={
                   formData.dokumen_kontrak?.name ||
-                  dokumenUrl.split("/").pop() ||
+                  (dokumenUrl ? dokumenUrl.split("/").pop() : "") ||
                   ""
                 }
                 readOnly
@@ -298,6 +320,10 @@ export default function UpdateKontrakForm({
             {errors.dokumen_kontrak && (
               <p className="text-sm text-red-500">{errors.dokumen_kontrak}</p>
             )}
+
+            <p className="text-xs text-gray-500 mt-1">
+              File PDF maksimal 10 MB.
+            </p>
           </div>
         </CardContent>
 
