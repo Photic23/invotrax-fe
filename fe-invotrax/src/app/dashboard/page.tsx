@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
-import { Calendar, TrendingUp, Package, RotateCcw, Star, Info } from 'lucide-react';
+import { Calendar, TrendingUp, Package, RotateCcw, Star, Info, DollarSign } from 'lucide-react';
 import Navbar from '@/components/ui/navbar';
 import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
@@ -104,6 +104,7 @@ interface DashboardData {
   orderFulfillmentRate: number;
   returnRate: number;
   customerSatisfaction: number;
+  totalValuation: number; // New field for total valuation
   chartData: ChartDataPoint[];
   topOrders: TopOrder[];
 }
@@ -129,6 +130,7 @@ const Dashboard: React.FC = () => {
     orderFulfillmentRate: 0,
     returnRate: 0,
     customerSatisfaction: 0,
+    totalValuation: 0, // Initialize new field
     chartData: [],
     topOrders: []
   });
@@ -197,6 +199,13 @@ const Dashboard: React.FC = () => {
     }));
   };
 
+  // Calculate total valuation of accepted orders
+  const calculateTotalValuation = (acceptedOrders: PengajuanPenawaranPengadaan[]): number => {
+    return acceptedOrders.reduce((total, order) => {
+      return total + parseFloat(order.harga_diajukan || '0');
+    }, 0);
+  };
+
   // Format currency
   const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat('id-ID', {
@@ -212,7 +221,19 @@ const Dashboard: React.FC = () => {
     return new Intl.NumberFormat('id-ID').format(num);
   };
 
-    const { logout } = useAuth();
+  // Format large numbers (millions/billions)
+  const formatLargeNumber = (num: number): string => {
+    if (num >= 1000000000) {
+      return `${(num / 1000000000).toFixed(1)}B`;
+    } else if (num >= 1000000) {
+      return `${(num / 1000000).toFixed(1)}M`;
+    } else if (num >= 1000) {
+      return `${(num / 1000).toFixed(1)}K`;
+    }
+    return formatNumber(num);
+  };
+
+  const { logout } = useAuth();
 
   // Fetch all data
   const fetchData = async (): Promise<void> => {
@@ -247,6 +268,9 @@ const Dashboard: React.FC = () => {
         : 0;
       const customerSatisfaction = (avgRating / 5) * 100;
 
+      // Calculate total valuation
+      const totalValuation = calculateTotalValuation(acceptedOrders);
+
       // Generate chart data
       const chartData = generateChartData(acceptedOrders);
 
@@ -267,6 +291,7 @@ const Dashboard: React.FC = () => {
         orderFulfillmentRate: Math.round(orderFulfillmentRate),
         returnRate: Math.round(returnRate * 10) / 10, // Round to 1 decimal
         customerSatisfaction: Math.round(customerSatisfaction),
+        totalValuation, // Add total valuation to state
         chartData,
         topOrders
       });
@@ -370,11 +395,11 @@ const Dashboard: React.FC = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
           <div className="bg-white p-6 rounded-lg shadow-sm border">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500 mb-1">Inventory Quantity</p>
+                <p className="text-sm font-medium text-gray-500 mb-1">Kuantitas Inventory</p>
                 <p className="text-3xl font-bold text-gray-900">{formatNumber(data.inventoryQuantity)}</p>
               </div>
               <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
@@ -386,9 +411,8 @@ const Dashboard: React.FC = () => {
           <div className="bg-white p-6 rounded-lg shadow-sm border">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500 mb-1">Order Fulfillment Rate</p>
+                <p className="text-sm font-medium text-gray-500 mb-1">Pesanan yang terpenuhi</p>
                 <p className="text-3xl font-bold text-gray-900">{data.orderFulfillmentRate}%</p>
-
               </div>
               <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
                 <TrendingUp className="w-5 h-5 text-green-600" />
@@ -399,7 +423,7 @@ const Dashboard: React.FC = () => {
           <div className="bg-white p-6 rounded-lg shadow-sm border">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500 mb-1">Return Rate</p>
+                <p className="text-sm font-medium text-gray-500 mb-1">Tingkat pengembalian</p>
                 <p className="text-3xl font-bold text-gray-900">{data.returnRate}%</p>
               </div>
               <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
@@ -419,6 +443,24 @@ const Dashboard: React.FC = () => {
               </div>
             </div>
           </div>
+
+          {/* New Total Valuation Card */}
+          <div className="bg-white p-6 rounded-lg shadow-sm border">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-500 mb-1">Total Transaksi</p>
+                <p className="text-2xl font-bold text-gray-900" title={formatCurrency(data.totalValuation)}>
+                  Rp {formatLargeNumber(data.totalValuation)}
+                </p>
+                <p className="text-xs text-gray-400 mt-1">
+                  {formatCurrency(data.totalValuation)}
+                </p>
+              </div>
+              <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
+                <DollarSign className="w-5 h-5 text-emerald-600" />
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Charts and Recent Orders */}
@@ -426,7 +468,7 @@ const Dashboard: React.FC = () => {
           {/* Overview Chart */}
           <div className="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm border">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-gray-900">Overview</h3>
+              <h3 className="text-lg font-semibold text-gray-900">Total valuasi transaksi per bulan</h3>
               <Info className="w-4 h-4 text-gray-400" />
             </div>
             
