@@ -26,7 +26,7 @@ export default function UserRegistrationForm() {
     password2: '',
     phone_number: '',
     company_name: '',
-    role: 'customer' as 'customer' | 'admin' | 'staff' | ' manager' | 'vendor'
+    role: 'customer' as 'customer' | 'admin' | 'staff' | ' manager' | 'vendor' | 'owner'
   });
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -40,7 +40,7 @@ export default function UserRegistrationForm() {
   const handleSelectChange = (value: string) => {
     setFormData(prev => ({
       ...prev,
-      role: value as 'customer' | 'admin' | 'staff' | ' manager' | 'vendor'
+      role: value as 'customer' | 'admin' | 'staff' | ' manager' | 'vendor' | 'owner'
     }));
   };
 
@@ -237,6 +237,7 @@ export default function UserRegistrationForm() {
                   <SelectItem value="staff">Staff</SelectItem>
                   <SelectItem value="vendor">Vendor</SelectItem>
                   <SelectItem value="manager">Manager</SelectItem>
+                  <SelectItem value="owner">Owner</SelectItem>
                 </SelectContent>
               </Select>
             </div>
