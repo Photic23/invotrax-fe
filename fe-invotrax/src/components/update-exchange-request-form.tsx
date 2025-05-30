@@ -21,6 +21,7 @@ import {
   DialogFooter,
   } from "@/components/ui/dialog";  
 import { useToast } from "@/hooks/use-toast";
+import { ArrowLeft } from "lucide-react";
 
 interface ExchangeRequest {
   id: number;
@@ -213,6 +214,13 @@ export default function UpdateExchangeRequestForm({ exchangeId }: UpdateExchange
   return (
     <Card className="max-w-2xl mx-auto">
       <CardHeader>
+        <button
+            onClick={() => router.back()}
+            className="flex items-center text-gray-600 hover:text-blue-800 transition"
+            >
+            <ArrowLeft className="w-5 h-5 mr-2" />
+            <span>Kembali</span>
+        </button>
         <CardTitle className="text-2xl font-bold text-center">
           Update Exchange Request EXC-{exchangeId}
         </CardTitle>
@@ -299,23 +307,23 @@ export default function UpdateExchangeRequestForm({ exchangeId }: UpdateExchange
         </CardFooter>
       </form>
 
+      {/* Modal konfirmasi update exchange */}
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
           <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-              <DialogTitle>Konfirmasi Update</DialogTitle>
-          </DialogHeader>
-          <p className="mb-4">Apakah Anda yakin ingin mengubah request ini?</p>
-          <DialogFooter>
-              <Button variant="outline" onClick={() => setConfirmOpen(false)}>
-              Batal
-              </Button>
-              <Button onClick={handleSubmit}>
-              Ubah
-              </Button>
-          </DialogFooter>
+            <DialogHeader>
+                <DialogTitle>Konfirmasi Update</DialogTitle>
+            </DialogHeader>
+            <p className="mb-4">Apakah Anda yakin ingin mengubah request ini?</p>
+            <DialogFooter>
+                <Button variant="outline" onClick={() => setConfirmOpen(false)}>
+                Batal
+                </Button>
+                <Button onClick={handleSubmit}>
+                Ubah
+                </Button>
+            </DialogFooter>
           </DialogContent>
       </Dialog>
-
     </Card>
   );
 }

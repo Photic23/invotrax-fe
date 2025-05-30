@@ -21,7 +21,7 @@ DialogFooter,
 } from "@/components/ui/dialog";
 import { ArrowLeft } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import Status, { DetailPengadaanStatus } from "./elements/detail/Status";
+import Status from "./elements/detail/Status";
 import { Input } from "./ui/input";
 import WarrantyStatus from "./elements/detail/WarrantyStatus";
 import RatingStatus from "./elements/detail/RatingStatus";
@@ -64,7 +64,7 @@ export default function PengajuanPenawaranPengadaanDetail({ pengajuanId }: Penga
     const { toast } = useToast();
     const router = useRouter();
     const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-    const { user, isLoggedIn, logout } = useAuth();
+    const { user } = useAuth();
     const [formData, setFormData] = useState({
         tanggal_estimasi: new Date().toISOString().split('T')[0],
         durasi_garansi: 30, // Default 30 days
@@ -119,6 +119,7 @@ export default function PengajuanPenawaranPengadaanDetail({ pengajuanId }: Penga
         }
     }
 
+    //fetch penilaian for displaying
     const fetchPenilaian = async () => {
         try {
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/penilaian/rating/by_pengajuan/${pengajuanId}/`, {
@@ -150,6 +151,7 @@ export default function PengajuanPenawaranPengadaanDetail({ pengajuanId }: Penga
         }
     };
 
+    //fetch exchange for check existence
     const fetchExchange = async () => {
         try {
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/layanan_pasca_beli/exchange-request/by_pengajuan/${pengajuanId}/`, {
@@ -178,7 +180,8 @@ export default function PengajuanPenawaranPengadaanDetail({ pengajuanId }: Penga
             setExchangeExists(false);
         }
     };
-
+    
+    //for handling deletion
     const handleDeletePengajuan = async () => {
         try {
             const response = await fetch(
@@ -218,6 +221,7 @@ export default function PengajuanPenawaranPengadaanDetail({ pengajuanId }: Penga
         }
     };
 
+    //for handling field change
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
@@ -232,6 +236,26 @@ export default function PengajuanPenawaranPengadaanDetail({ pengajuanId }: Penga
         }
     };
 
+      // make sure tanggal estimasi was filled correctly (not before today)
+    const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.tanggal_estimasi) {
+        newErrors.tanggal_estimasi = "Tanggal estimasi harus diisi";
+    } else {
+        const today = new Date().toISOString().split("T")[0];
+        const inputDate = formData.tanggal_estimasi;
+
+        if (inputDate < today) {
+        newErrors.tanggal_estimasi = "Tanggal estimasi tidak boleh sebelum hari ini";
+        }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+    };
+
+    //for handling rejection case
     const handleTolak = async () => {
         setIsLoading(true);
         try {
@@ -280,9 +304,22 @@ export default function PengajuanPenawaranPengadaanDetail({ pengajuanId }: Penga
         }
     }
 
+    // for handling status change per stage
     const handleUpdateStatus = async (newStatus: string) => {
         if (!pengajuan) return;
-        try {
+
+        if (pengajuan.status === 'diajukan' && ['staff', 'manager'].includes(user?.role ?? '')) {
+            if (!validateForm()) {
+                toast({
+                title: "Error",
+                description: "Harap perbaiki kesalahan pada form",
+                variant: "destructive",
+                });
+                return;
+            }
+        }
+
+        try {    
             type updatePayload = {
                 status: string;
                 tanggal_estimasi?: string;
@@ -363,6 +400,7 @@ export default function PengajuanPenawaranPengadaanDetail({ pengajuanId }: Penga
         return <p>Pengajuan penawaran pengadaan tidak ditemukan.</p>;
     }
 
+    //formatting style
     const formattedDate = pengajuan.tanggal_diterima_dikirim
         ? new Date(pengajuan.tanggal_diterima_dikirim).toLocaleDateString('id-ID', {
             day: 'numeric',
@@ -391,6 +429,7 @@ export default function PengajuanPenawaranPengadaanDetail({ pengajuanId }: Penga
             minimumFractionDigits: 2,
         });
 
+    //for all modal dialog cases
     const dialogConfig = {
         hapus: {
             title: "Konfirmasi Hapus",
@@ -429,61 +468,76 @@ export default function PengajuanPenawaranPengadaanDetail({ pengajuanId }: Penga
         },
     };
 
+    // for showing different fields and actionable per stages and per roles (staff/manager vs customer)
     const getAdditionalFields = (status: string) => {
         switch (user?.role) {
+            case 'manager':     //staff and manager have same accessibility
             case 'staff':
                 switch (status) {
                     case 'diajukan':
                         return {
-                            status: <Status status={pengajuan.status} />,
-                            button1: <Button onClick={() => setActiveDialog("setuju")} disabled={isLoading}>
+                        status:
+                            <Status status={pengajuan.status}/>,
+                        button1:
+                            <Button onClick={() => setActiveDialog("setuju")} disabled={isLoading}>
                                 Setujui Request
                             </Button>,
-                            button2: <Button variant="destructive" onClick={() => setActiveDialog("tolak")} disabled={isLoading}>
+                        button2:
+                            <Button variant="destructive" onClick={() => setActiveDialog("tolak")} disabled={isLoading}>
                                 Tolak Request
                             </Button>,
-                            field1: <div>
+                        field1: 
+                            <div>
                                 <Label>Harga yang Diajukan (per unit)</Label>
                                 <p>{formatHarga(pengajuan.harga_diajukan)}</p>
                             </div>,
-                            field2: <div className="space-y-2">
+                        field2: 
+                            <div className="space-y-2">
                                 <Label htmlFor="tanggal_estimasi">Estimasi Tanggal Produk Dikirim</Label>
                                 <Input
                                     id="tanggal_estimasi"
                                     name="tanggal_estimasi"
                                     type="date"
-                                    value={formData.tanggal_estimasi ? new Date(formData.tanggal_estimasi).toISOString().split('T')[0] : ''}
+                                    value= {
+                                        formData.tanggal_estimasi
+                                            ? new Date(formData.tanggal_estimasi).toISOString().split('T')[0]
+                                            : ''
+                                        }  
                                     onChange={handleChange}
                                     placeholder="Masukkan estimasi tanggal pengiriman produk"
+                                    min={new Date().toISOString().split("T")[0]}
                                     className={errors.tanggal_estimasi ? "border-red-500" : ""}
                                 />
                                 {errors.tanggal_estimasi && (
                                     <p className="text-sm text-red-500">{errors.tanggal_estimasi}</p>
                                 )}
-                            </div>,
-                            field3: <div></div>,
-                            field4: <div></div>
+                            </div>
                         }
                     case 'diproses':
                         return {
-                            status: <Status status={pengajuan.status} />,
-                            button1: <Button onClick={() => setActiveDialog("kirim")} disabled={isLoading}>
+                        status:
+                            <Status status={pengajuan.status}/>,
+                        button1:
+                            <Button onClick={() => setActiveDialog("kirim")} disabled={isLoading}>
                                 Kirim Pesanan
                             </Button>,
-                            button2: <div></div>,
-                            field1: <div>
+                        field1: 
+                            <div>
                                 <Label>Estimasi Tanggal Produk Dikirim</Label>
                                 <p>{formattedEstimateDate}</p>
                             </div>,
-                            field2: <div>
+                        field2: 
+                            <div>
                                 <Label>Harga yang Diterima (per unit)</Label>
                                 <p>{formatHarga(pengajuan.harga_diajukan)}</p>
                             </div>,
-                            field3: <div>
+                        field3: 
+                            <div>
                                 <Label>Total Harga</Label>
                                 <p>{formatHarga(pengajuan.harga_diajukan * pengajuan.jumlah_produk)}</p>
                             </div>,
-                            field4: <div className="space-y-2">
+                        field4: 
+                            <div className="space-y-2">
                                 <Label htmlFor="durasi_garansi">Durasi Garansi (hari)</Label>
                                 <Input
                                     id="durasi_garansi"
@@ -502,275 +556,297 @@ export default function PengajuanPenawaranPengadaanDetail({ pengajuanId }: Penga
                         }
                     case 'dikirim':
                         return {
-                            status: <Status status={pengajuan.status} />,
-                            button1: <div className="italic text-sm text-muted-foreground">
+                        status:
+                            <Status status={pengajuan.status}/>,
+                        button1: 
+                            <div className="italic text-sm text-muted-foreground">
                                 Pengiriman sedang berlangsung. Menunggu konfirmasi penerimaan dari customer.
-                            </div>,
-                            button2: <div></div>,
-                            field1: <div>
+                            </div>,  
+                        field1: 
+                            <div>
                                 <Label>Tanggal Produk Dikirim</Label>
                                 <p>{formattedDate}</p>
                             </div>,
-                            field2: <div>
+                        field2: 
+                            <div>
                                 <Label>Harga yang Diterima (per unit)</Label>
                                 <p>{formatHarga(pengajuan.harga_diajukan)}</p>
                             </div>,
-                            field3: <div>
+                        field3: 
+                            <div>
                                 <Label>Total Harga</Label>
-                                <p>{formatHarga(pengajuan.harga_diajukan * pengajuan.jumlah_produk)}</p>
+                                <p>{formatHarga(pengajuan.harga_diajukan * pengajuan.jumlah_produk)}</p>     
                             </div>,
-                            field4: <div>
+                        field4: 
+                            <div>
                                 <Label>Durasi Garansi</Label>
                                 <p>{pengajuan.durasi_garansi ? `${pengajuan.durasi_garansi} hari` : '-'}</p>
                             </div>
                         }
                     case 'diterima':
                         return {
-                            rating: <RatingStatus rating={penilaian?.rating ?? 0} deskripsi={penilaian?.deskripsi ?? ""} />,
-                            warrantystatus: <WarrantyStatus warranty_status={pengajuan.status_garansi} />,
-                            status: <Status status={pengajuan.status} />,
-                            button1: <div className="italic text-sm text-muted-foreground">
+                        rating:
+                            <RatingStatus rating={penilaian?.rating ?? 0} deskripsi={penilaian?.deskripsi ?? ""}/>,
+                        warrantystatus:
+                            <WarrantyStatus warranty_status={pengajuan.status_garansi}/>,
+                        status:
+                            <Status status={pengajuan.status}/>,
+                        button1:
+                            <div className="italic text-sm text-muted-foreground">
                                 Customer telah menerima produk.
-                            </div>,
-                            field1: <div>
+                            </div>, 
+                        field1: 
+                            <div>
                                 <Label>Tanggal Produk Diterima</Label>
                                 <p>{formattedDate}</p>
                             </div>,
-                            field2: <div>
+                        field2: 
+                            <div>
                                 <Label>Harga yang Diterima (per unit)</Label>
                                 <p>{formatHarga(pengajuan.harga_diajukan)}</p>
                             </div>,
-                            field3: <div>
+                        field3: 
+                            <div>
                                 <Label>Total Harga</Label>
                                 <p>{formatHarga(pengajuan.harga_diajukan * pengajuan.jumlah_produk)}</p>
                             </div>,
-                            field4: <div>
+                        field4:
+                            <div>
                                 <Label>Tanggal Garansi Berakhir</Label>
                                 <p>{formattedWarrantyDate}</p>
                             </div>
                         }
                     case 'ditolak':
                         return {
-                            status: <Status status={pengajuan.status} />,
-                            button1: <div className="italic text-sm text-muted-foreground">
+                        status:
+                            <Status status={pengajuan.status}/>,
+                        button1: 
+                            <div className="italic text-sm text-muted-foreground">
                                 Request telah ditolak.
                             </div>,
-                            button2: <div></div>,
-                            field1: <div>
+                        field1: 
+                            <div>
                                 <Label>Harga yang Diajukan (per unit)</Label>
                                 <p>{formatHarga(pengajuan.harga_diajukan)}</p>
-                            </div>,
-                            field2: <div></div>,
-                            field3: <div></div>,
-                            field4: <div></div>
+                            </div>
                         }
-                }
-                break;
+                    }
             case 'customer':
                 switch (status) {
                     case 'diajukan':
-                        return {
-                            status: <Status status={pengajuan.status} />,
-                            button1: <Button onClick={() => router.push(`/pengajuan_penawaran_pengadaan/${pengajuanId}/update`)} disabled={isLoading}>
+                    return {
+                        status:
+                            <Status status={pengajuan.status}/>,
+                        button1: 
+                            <Button onClick={() => router.push(`/pengajuan_penawaran_pengadaan/${pengajuanId}/update`)} disabled={isLoading}>
                                 Ubah Request
-                            </Button>,
-                            button2: <Button variant="destructive" onClick={() => setActiveDialog("hapus")} disabled={isLoading}>
+                            </Button>, 
+                        button2:
+                            <Button variant="destructive" onClick={() => setActiveDialog("hapus")} disabled={isLoading}>
                                 Cancel Request
                             </Button>,
-                            field1: <div>
+                        field1: 
+                            <div>
                                 <Label>Harga yang Diajukan (per unit)</Label>
                                 <p>{formatHarga(pengajuan.harga_diajukan)}</p>
-                            </div>,
-                            field2: <div></div>,
-                            field3: <div></div>,
-                            field4: <div></div>
-                        }
+                            </div>
+                    }
                     case 'diproses':
-                        return {
-                            status: <Status status={pengajuan.status} />,
-                            button1: <div className="italic text-sm text-muted-foreground">
+                    return {
+                        status:
+                            <Status status={pengajuan.status}/>,
+                        button1: 
+                            <div className="italic text-sm text-muted-foreground">
                                 Request sedang diproses. Mohon menunggu proses pengiriman dari staf.
-                            </div>,
-                            button2: <div></div>,
-                            field1: <div>
+                            </div>,  
+                        field1:
+                            <div>
                                 <Label>Estimasi Tanggal Produk Dikirim</Label>
                                 <p>{formattedEstimateDate}</p>
                             </div>,
-                            field2: <div>
+                        field2: 
+                            <div>
                                 <Label>Harga yang Diterima (per unit)</Label>
                                 <p>{formatHarga(pengajuan.harga_diajukan)}</p>
                             </div>,
-                            field3: <div>
+                        field3: 
+                            <div>
                                 <Label>Total Harga</Label>
                                 <p>{formatHarga(pengajuan.harga_diajukan * pengajuan.jumlah_produk)}</p>
-                            </div>,
-                            field4: <div></div>
-                        }
+                            </div>
+                    }
                     case 'dikirim':
-                        return {
-                            status: <Status status={pengajuan.status} />,
-                            button1: <Button onClick={() => setActiveDialog("terima")} disabled={isLoading}>
+                    return {
+                        status:
+                            <Status status={pengajuan.status}/>,
+                        button1:
+                            <Button onClick={() => setActiveDialog("terima")} disabled={isLoading}>
                                 Terima Request
                             </Button>,
-                            button2: <div></div>,
-                            field1: <div>
+                        field1: 
+                            <div>
                                 <Label>Tanggal Produk Dikirim</Label>
                                 <p>{formattedDate}</p>
                             </div>,
-                            field2: <div>
+                        field2: 
+                            <div>
                                 <Label>Harga yang Diterima (per unit)</Label>
                                 <p>{formatHarga(pengajuan.harga_diajukan)}</p>
                             </div>,
-                            field3: <div>
+                        field3: 
+                            <div>
                                 <Label>Total Harga</Label>
                                 <p>{formatHarga(pengajuan.harga_diajukan * pengajuan.jumlah_produk)}</p>
-                            </div>,
-                            field4: <div>
-                                <Label>Durasi Garansi</Label>
-                                <p>{pengajuan.durasi_garansi ? `${pengajuan.durasi_garansi} hari` : '-'}</p>
                             </div>
-                        }
+                    }
                     case 'diterima':
-                        const isWarrantyValid = pengajuan.status_garansi === 'Berlaku';
-                        return {
-                            rating: <RatingStatus rating={penilaian?.rating ?? 0} deskripsi={penilaian?.deskripsi ?? ""} />,
-                            warrantystatus: <WarrantyStatus warranty_status={pengajuan.status_garansi} />,
-                            status: <Status status={pengajuan.status} />,
-                            button1: (
-                                !exchangeExists && !penilaian ? (
-                                    <div className="flex gap-4 mt-1.5">
-                                        {isWarrantyValid && (
-                                            <Button onClick={() => router.push(`/exchange/create/${pengajuan.id}`)}>
-                                                Create Exchange Request
-                                            </Button>
-                                        )}
-                                        <Button onClick={() => router.push(`/penilaian/${pengajuan.id}`)}>
-                                            Buat Penilaian
-                                        </Button>
-                                    </div>
-                                ) : !exchangeExists && isWarrantyValid ? (
-                                    <Button onClick={() => router.push(`/exchange/create/${pengajuan.id}`)}>
-                                        Create Exchange Request
-                                    </Button>
-                                ) : !penilaian ? (
-                                    <Button onClick={() => router.push(`/penilaian/${pengajuan.id}`)}>
-                                        Buat Penilaian
-                                    </Button>
-                                ) : (
-                                    <div className="italic text-sm text-muted-foreground">
-                                        Exchange request dan penilaian untuk pengajuan ini sudah dibuat.
-                                    </div>
-                                )
-                            ),
-                            button2: <div></div>,
-                            field1: <div>
+                    const isWarrantyValid = pengajuan.status_garansi === 'Berlaku';
+                    return {
+                        rating:
+                        <RatingStatus rating={penilaian?.rating ?? 0} deskripsi={penilaian?.deskripsi ?? ""}/>,
+                        warrantystatus:
+                            <WarrantyStatus warranty_status={pengajuan.status_garansi}/>,
+                        status:
+                            <Status status={pengajuan.status}/>,
+                        button1: (
+                            !exchangeExists && !penilaian ? (
+                            <div className="flex gap-4 mt-1.5">
+                                {isWarrantyValid && (
+                                <Button onClick={() => router.push(`/exchange/create/${pengajuan.id}`)}>
+                                    Create Exchange Request
+                                </Button>
+                                )}
+                                <Button onClick={() => router.push(`/penilaian/${pengajuan.id}`)}>
+                                Buat Penilaian
+                                </Button>
+                            </div>
+                            ) : !exchangeExists && isWarrantyValid ? (
+                            <Button onClick={() => router.push(`/exchange/create/${pengajuan.id}`)}>
+                                Create Exchange Request
+                            </Button>
+                            ) : !penilaian ? (
+                            <Button onClick={() => router.push(`/penilaian/${pengajuan.id}`)}>
+                                Buat Penilaian
+                            </Button>
+                            ) : (
+                            <div className="italic text-sm text-muted-foreground">
+                                Exchange request dan penilaian untuk pengajuan ini sudah dibuat.
+                            </div>
+                            )
+                        ),
+                        field1: 
+                            <div>
                                 <Label>Tanggal Produk Diterima</Label>
                                 <p>{formattedDate}</p>
                             </div>,
-                            field2: <div>
+                        field2: 
+                            <div>
                                 <Label>Harga yang Diterima (per unit)</Label>
                                 <p>{formatHarga(pengajuan.harga_diajukan)}</p>
                             </div>,
-                            field3: <div>
+                        field3: 
+                            <div>
                                 <Label>Total Harga</Label>
                                 <p>{formatHarga(pengajuan.harga_diajukan * pengajuan.jumlah_produk)}</p>
                             </div>,
-                            field4: <div>
+                        field4:
+                            <div>
                                 <Label>Tanggal Garansi Berakhir</Label>
                                 <p>{formattedWarrantyDate}</p>
                             </div>
-                        }
+                    }
                     case 'ditolak':
-                        return {
-                            status: <Status status={pengajuan.status} />,
-                            button1: <Button onClick={() => router.push(`/pengajuan_penawaran_pengadaan/${pengajuanId}/update`)} disabled={isLoading}>
+                    return {
+                        status:
+                            <Status status={pengajuan.status}/>,
+                        button1:
+                            <Button onClick={() => router.push(`/pengajuan_penawaran_pengadaan/${pengajuanId}/update`)} disabled={isLoading}>
                                 Ubah Request
                             </Button>,
-                            button2: <Button variant="destructive" onClick={() => setActiveDialog("hapus")} disabled={isLoading}>
+                        button2:
+                            <Button variant="destructive" onClick={() => setActiveDialog("hapus")} disabled={isLoading}>
                                 Cancel Request
                             </Button>,
-                            field1: <div>
+                        field1: 
+                            <div>
                                 <Label>Harga yang Diajukan (per unit)</Label>
                                 <p>{formatHarga(pengajuan.harga_diajukan)}</p>
-                            </div>,
-                            field2: <div></div>,
-                            field3: <div></div>,
-                            field4: <div></div>
-                        }
+                            </div>
+                    }
                 }
-                break;
-            default:
-                return {}
+        default:
+            return
         }
     }
 
     return (
         <Card className="max-w-4xl mx-auto">
-            <CardHeader className="flex-row justify-between items-center mx-2 my-2">
-                <button
-                    onClick={() => router.push(`/pengajuan_penawaran_pengadaan`)}
-                    className="flex items-center text-gray-600 hover:text-blue-800 transition"
+        <CardHeader className="flex-row justify-between items-center mx-2 my-2">
+            <button
+                onClick={() => router.push(`/pengajuan_penawaran_pengadaan`)}
+                className="flex items-center text-gray-600 hover:text-blue-800 transition"
                 >
-                    <ArrowLeft className="w-5 h-5 mr-2" />
-                    <span>Kembali</span>
-                </button>
-                <CardTitle className="text-2xl font-bold text-center">
-                    Request Pengajuan {pengajuan.nama_produk}
-                </CardTitle>
-                <div className="pr-1 flex flex-row space-x-4">
-                    {getAdditionalFields(pengajuan.status)?.status}
-                    {getAdditionalFields(pengajuan.status)?.warrantystatus}
-                    {getAdditionalFields(pengajuan.status)?.rating}
-                </div>
-            </CardHeader>
-            <CardContent className="space-y-4 mx-2">
-                <div>
-                    <Label>Nama Supplier</Label>
-                    {pengajuan.supplier_vendor_detail?.company_name && (
+                <ArrowLeft className="w-5 h-5 mr-2" />
+                <span>Kembali</span>
+            </button>
+            <CardTitle className="text-2xl font-bold text-center">
+                Request Pengajuan {pengajuan.nama_produk}
+            </CardTitle>
+            <div className="pr-1 flex flex-row space-x-4">
+                {getAdditionalFields(pengajuan.status)?.status}
+                {getAdditionalFields(pengajuan.status)?.warrantystatus}
+                {getAdditionalFields(pengajuan.status)?.rating}
+            </div>
+        </CardHeader>
+        <CardContent className="space-y-4 mx-2">
+            <div>
+                <Label>Nama Supplier</Label>
+                {pengajuan.supplier_vendor_detail?.company_name && (
                         <p>{pengajuan.supplier_vendor_detail.company_name}</p>
-                    )}
-                </div>
-                <div>
-                    <Label>Nama Produk</Label>
-                    <p>{pengajuan.nama_produk}</p>
-                </div>
-                <div>
-                    <Label>Kategori Produk</Label>
-                    {pengajuan.kategori_produk_detail?.nama && (
+                )}
+            </div>
+            <div>
+                <Label>Nama Produk</Label>
+                <p>{pengajuan.nama_produk}</p>
+            </div>
+            <div>
+                <Label>Kategori Produk</Label>
+                {pengajuan.kategori_produk_detail?.nama && (
                         <p>{pengajuan.kategori_produk_detail.nama}</p>
-                    )}
-                </div>
-                <div>
-                    <Label>Jumlah Stok</Label>
-                    <p>{pengajuan.jumlah_produk}</p>
-                </div>
-                <div>
-                    <Label>Deskripsi Produk</Label>
-                    <p>{pengajuan.deskripsi_produk}</p>
-                </div>
-                <div>
-                    <Label>URL Foto Produk</Label>
-                    <p>
-                        <a
-                            href={pengajuan.url_foto_produk}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-800 hover:underline break-all"
-                        >
-                            {pengajuan.url_foto_produk}
-                        </a>
-                    </p>
-                </div>
-                {getAdditionalFields(pengajuan.status)?.field1}
-                {getAdditionalFields(pengajuan.status)?.field2}
-                {getAdditionalFields(pengajuan.status)?.field3}
-                {getAdditionalFields(pengajuan.status)?.field4}
-            </CardContent>
-            <CardFooter className="flex mx-2 gap-4 mb-5">
-                {getAdditionalFields(pengajuan.status)?.button1}
-                {getAdditionalFields(pengajuan.status)?.button2}
-            </CardFooter>
+                )}
+            </div>
+            <div>
+                <Label>Jumlah Stok</Label>
+                <p>{pengajuan.jumlah_produk}</p>
+            </div>
+            <div>
+                <Label>Deskripsi Produk</Label>
+                <p>{pengajuan.deskripsi_produk}</p>
+            </div>
+            <div>
+                <Label>URL Foto Produk</Label>
+                <p>
+                    <a 
+                        href={pengajuan.url_foto_produk}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-800 hover:underline break-all"
+                    >
+                        {pengajuan.url_foto_produk}
+                    </a>
+                </p>
+            </div>
+            {getAdditionalFields(pengajuan.status)?.field1}
+            {getAdditionalFields(pengajuan.status)?.field2}
+            {getAdditionalFields(pengajuan.status)?.field3}
+            {getAdditionalFields(pengajuan.status)?.field4}
+        </CardContent>
+        <CardFooter className="flex mx-2 gap-4 mb-5">
+            {getAdditionalFields(pengajuan.status)?.button1}
+            {getAdditionalFields(pengajuan.status)?.button2}
+        </CardFooter>
 
+            {/* Modal for all confirmation needed to move between stages */}
             <Dialog open={!!activeDialog} onOpenChange={() => setActiveDialog(null)}>
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
@@ -795,8 +871,4 @@ export default function PengajuanPenawaranPengadaanDetail({ pengajuanId }: Penga
             </Dialog>
         </Card>
     );
-}
-
-function elif(arg0: boolean) {
-throw new Error("Function not implemented.");
 }

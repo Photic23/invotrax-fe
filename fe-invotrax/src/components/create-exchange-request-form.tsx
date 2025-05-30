@@ -219,8 +219,15 @@ export default function CreateExchangeRequestForm({ pengajuanId }: CreateExchang
   return (
     <Card className="max-w-2xl mx-auto">
       <CardHeader>
+        <button
+            onClick={() => router.back()}
+            className="flex items-center text-gray-600 hover:text-blue-800 transition"
+            >
+            <ArrowLeft className="w-5 h-5 mr-2" />
+            <span>Kembali</span>
+        </button>
         <CardTitle className="text-2xl font-bold text-center">
-          Buat Exchange Request
+          Buat Exchange Request untuk {pengajuan?.nama_produk}
         </CardTitle>
       </CardHeader>
       <form onSubmit={handleSubmit}>
@@ -285,7 +292,7 @@ export default function CreateExchangeRequestForm({ pengajuanId }: CreateExchang
         </CardFooter>
       </form>
 
-      {/* Modal konfirmasi */}
+      {/* Modal konfirmasi pengajuan exchange */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
