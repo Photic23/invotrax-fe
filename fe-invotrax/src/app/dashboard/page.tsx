@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, TrendingUp, Package, RotateCcw, Star, Info, DollarSign } from 'lucide-react';
 import Navbar from '@/components/ui/navbar';
 import { useAuth } from '@/contexts/AuthContext';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
@@ -93,6 +94,7 @@ interface ChartDataPoint {
 }
 
 interface TopOrder {
+  id: number; // Add id field for navigation
   name: string;
   company: string;
   amount: number;
@@ -107,6 +109,7 @@ interface DashboardData {
   totalValuation: number; // New field for total valuation
   chartData: ChartDataPoint[];
   topOrders: TopOrder[];
+  topOrdersWithData: { order: TopOrder; pengajuanData: PengajuanPenawaranPengadaan }[]; // Store full data
 }
 
 const Dashboard: React.FC = () => {
@@ -132,7 +135,8 @@ const Dashboard: React.FC = () => {
     customerSatisfaction: 0,
     totalValuation: 0, // Initialize new field
     chartData: [],
-    topOrders: []
+    topOrders: [],
+    topOrdersWithData: [] // Initialize full data array
   });
   
   const [loading, setLoading] = useState<boolean>(true);
@@ -233,7 +237,17 @@ const Dashboard: React.FC = () => {
     return formatNumber(num);
   };
 
+    // Handle navigation with data
+  const handleOrderClick = (order: TopOrder, pengajuanData: PengajuanPenawaranPengadaan) => {
+    // Store data in sessionStorage as fallback
+    sessionStorage.setItem(`pengajuan_${order.id}`, JSON.stringify(pengajuanData));
+    
+    // Navigate to detail page
+    router.push(`/dashboard/${order.id}`);
+  };
+
   const { logout } = useAuth();
+  const router = useRouter();
 
   // Fetch all data
   const fetchData = async (): Promise<void> => {
@@ -275,15 +289,21 @@ const Dashboard: React.FC = () => {
       const chartData = generateChartData(acceptedOrders);
 
       // Get top 5 orders by value (only orders with supplier_vendor_detail)
-      const topOrders: TopOrder[] = acceptedOrders
+      const topOrdersWithData: { order: TopOrder; pengajuanData: PengajuanPenawaranPengadaan }[] = acceptedOrders
         .filter(order => order.supplier_vendor_detail !== null && order.supplier_vendor_detail !== undefined)
         .sort((a, b) => parseFloat(b.harga_diajukan) - parseFloat(a.harga_diajukan))
         .slice(0, 5)
         .map(order => ({
-          name: order.nama_produk,
-          company: order.supplier_vendor_detail!.company_name, // Safe to use ! since we filtered out nulls
-          amount: parseFloat(order.harga_diajukan)
+          order: {
+            id: order.id,
+            name: order.nama_produk,
+            company: order.supplier_vendor_detail!.company_name,
+            amount: parseFloat(order.harga_diajukan)
+          },
+          pengajuanData: order
         }));
+
+      const topOrders = topOrdersWithData.map(item => item.order);
 
       setData({
         inventoryQuantity: stockData.total_stok,
@@ -293,7 +313,8 @@ const Dashboard: React.FC = () => {
         customerSatisfaction: Math.round(customerSatisfaction),
         totalValuation, // Add total valuation to state
         chartData,
-        topOrders
+        topOrders,
+        topOrdersWithData // Store the full data for navigation
       });
 
     } catch (err) {
@@ -350,7 +371,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-        <ProtectedRoute requiredRole={["admin", "manager"]}>
+        <ProtectedRoute requiredRole={["manager", "owner"]}>
         <header className="border-b">
           <div className="container mx-auto px-4 py-4 flex justify-between items-center">
             <div className="flex items-center gap-6">
@@ -448,7 +469,7 @@ const Dashboard: React.FC = () => {
           <div className="bg-white p-6 rounded-lg shadow-sm border">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500 mb-1">Total Transaksi</p>
+                <p className="text-sm font-medium text-gray-500 mb-1">Total Valuasi Diterima</p>
                 <p className="text-2xl font-bold text-gray-900" title={formatCurrency(data.totalValuation)}>
                   Rp {formatLargeNumber(data.totalValuation)}
                 </p>
@@ -506,23 +527,27 @@ const Dashboard: React.FC = () => {
             
             <div className="space-y-4">
               {data.topOrders.length > 0 ? (
-                data.topOrders.map((order, index) => (
-                  <div key={index} className="flex items-center space-x-3">
+                data.topOrdersWithData.map((item, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleOrderClick(item.order, item.pengajuanData)}
+                    className="w-full flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer text-left"
+                  >
                     <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                      <span className="text-xs font-medium text-gray-600">{order.name.charAt(0)}</span>
+                      <span className="text-xs font-medium text-gray-600">{item.order.name.charAt(0)}</span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">{order.name}</p>
-                      <p className="text-xs text-gray-500 truncate">{order.company}</p>
+                      <p className="text-sm font-medium text-gray-900 truncate">{item.order.name}</p>
+                      <p className="text-xs text-gray-500 truncate">{item.order.company}</p>
                     </div>
                     <div className="text-sm font-semibold text-green-600">
-                      {formatCurrency(order.amount)}
+                      {formatCurrency(item.order.amount)}
                     </div>
-                  </div>
+                  </button>
                 ))
               ) : (
                 <div className="text-center text-gray-500 py-8">
-                  <p className="text-sm">No orders found in selected date range</p>
+                  <p className="text-sm">Tidak ada order pada tanggal tersebut</p>
                 </div>
               )}
             </div>
