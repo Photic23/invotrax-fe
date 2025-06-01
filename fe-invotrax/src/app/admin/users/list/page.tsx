@@ -50,7 +50,7 @@ export default function UsersTable() {
   const [roleFilter, setRoleFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const {logout } = useAuth();
+  const { user, logout } = useAuth();
   const router = useRouter();
 
   // Fetch users from the API with authentication token
