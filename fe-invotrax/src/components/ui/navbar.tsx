@@ -125,16 +125,6 @@ export default function Navbar() {
                 description: "Evaluate suppliers and view evaluation records per quarter."
               },              
               {
-                title: "My Profile",
-                href: "/customer/profile",
-                description: "View and update your account information."
-              },
-              {
-                title: "My Orders",
-                href: "/customer/orders",
-                description: "Track your orders and purchase history."
-              },
-              {
                 title: "Daftar Exchange List",
                 href: "/exchange/list",
                 description: "Lihat Daftar Exchange Pengadaan."
