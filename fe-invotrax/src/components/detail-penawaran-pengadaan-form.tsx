@@ -366,7 +366,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
     },
   };
 
-  // for showing different fields and actionable per stages and per roles (vendor vs staff/manager)
+  // for showing different fields and actionable per stages and per roles (vendor vs staff)
   const getAdditionalFields = (status: string) => {
     switch (user?.role) {
       case 'vendor':
@@ -488,8 +488,7 @@ export default function PenawaranPengadaanDetail ({ pengadaanId }: PenawaranPeng
             }
         }
 
-      case 'staff':     //staff and manager have same accessibility
-      case 'manager':
+      case 'staff':    
         switch (status) {
           case 'diajukan':
             return {
