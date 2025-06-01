@@ -175,7 +175,7 @@ export default function Navbar() {
           
           {/* Features menu - content changes based on role */}
           <NavigationMenuItem>
-            <NavigationMenuTrigger>Features</NavigationMenuTrigger>
+            <NavigationMenuTrigger>Fitur</NavigationMenuTrigger>
             <NavigationMenuContent>
               <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2">
                 {getFeatureItems().map((item, index) => (
