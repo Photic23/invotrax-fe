@@ -1,23 +1,64 @@
 'use client';
 
-import React from "react";
+import React, { useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
   NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-  navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Navbar from "@/components/ui/navbar";
 
+// Define types for better TypeScript support
+type UserRole = 'admin' | 'staff' | 'customer' | 'vendor' | 'manager' | 'owner';
+
+type RoleRedirectMap = {
+  [K in UserRole]: string;
+};
+
 export default function HomePage() {
-  const { user, logout } = useAuth();
+  const { user, logout, isLoading } = useAuth();
+  const router = useRouter();
+
+  // Role-based redirection with proper TypeScript typing
+  useEffect(() => {
+    if (!isLoading && user) {
+      const roleRedirects: RoleRedirectMap = {
+        'admin': '/admin/users/list',
+        'staff': '/pengajuan_penawaran_pengadaan',
+        'customer': '/pengajuan_penawaran_pengadaan',
+        'vendor': '/penawaran-pengadaan',
+        'manager': '/kontrak',
+        'owner': '/dashboard'
+      };
+
+      const userRole = user.role.toLowerCase() as UserRole;
+      const redirectPath = roleRedirects[userRole];
+      
+      if (redirectPath) {
+        router.push(redirectPath);
+      } else {
+        console.warn(`Unknown role: ${user.role}. No redirect configured.`);
+      }
+    }
+  }, [user, isLoading, router]);
+
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // This component will only briefly show before redirect
+  // You might want to show a loading state or redirect message
   return (
     <ProtectedRoute>
       <div className="min-h-screen flex flex-col">
@@ -42,12 +83,13 @@ export default function HomePage() {
           </div>
         </header>
 
-        {/* Main Content */}
+        {/* Main Content - Shows briefly before redirect */}
         <main className="flex-1 container mx-auto px-4 py-16">
           <div className="flex flex-col items-center justify-center text-center">
-            <h1 className="text-4xl font-bold mb-6">Welcome, {user?.name}!</h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Your role is {user?.role}!
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+            <h1 className="text-2xl font-bold mb-4">Welcome, {user?.name}!</h1>
+            <p className="text-lg text-muted-foreground">
+              Redirecting you to your dashboard...
             </p>
           </div>
         </main>
@@ -60,64 +102,6 @@ export default function HomePage() {
         </footer>
       </div>
     </ProtectedRoute>
-  );
-}
-
-function MainNav() {
-  return (
-    <NavigationMenu>
-      <NavigationMenuList>
-        <NavigationMenuItem>
-          <Link href="/" legacyBehavior passHref>
-            <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-              Home
-            </NavigationMenuLink>
-          </Link>
-        </NavigationMenuItem>
-        <NavigationMenuItem>
-          <NavigationMenuTrigger>Features</NavigationMenuTrigger>
-          <NavigationMenuContent>
-            <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2">
-              <ListItem href="/features/analytics" title="Analytics">
-                Track your application performance and user engagement.
-              </ListItem>
-              <ListItem href="/features/automation" title="Automation">
-                Automate repetitive tasks and workflows.
-              </ListItem>
-              <ListItem href="/features/reporting" title="Reporting">
-                Generate detailed reports and insights.
-              </ListItem>
-              <ListItem href="/features/integration" title="Integration">
-                Connect with other tools and services.
-              </ListItem>
-            </ul>
-          </NavigationMenuContent>
-        </NavigationMenuItem>
-        <NavigationMenuItem>
-          <NavigationMenuTrigger>Resources</NavigationMenuTrigger>
-          <NavigationMenuContent>
-            <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2">
-              <ListItem href="/resources/documentation" title="Documentation">
-                Learn how to use our platform effectively.
-              </ListItem>
-              <ListItem href="/resources/blog" title="Blog">
-                Read the latest news and updates.
-              </ListItem>
-              <ListItem href="/resources/support" title="Support">
-                Get help with any issues or questions.
-              </ListItem>
-            </ul>
-          </NavigationMenuContent>
-        </NavigationMenuItem>
-        <NavigationMenuItem>
-          <Link href="/profile" legacyBehavior passHref>
-            <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-              About
-            </NavigationMenuLink>
-          </Link>
-        </NavigationMenuItem>
-      </NavigationMenuList>
-    </NavigationMenu>
   );
 }
 
