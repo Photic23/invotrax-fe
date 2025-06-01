@@ -22,9 +22,9 @@ export default function Navbar() {
     // Common features for all authenticated users
     const commonFeatures = [
       {
-        title: "Dashboard",
-        href: "/dashboard",
-        description: "View your personalized dashboard."
+        title: "Profil Saya",
+        href: "/user/detail",
+        description: "Lihat profil saya."
       }
     ];
 
@@ -34,25 +34,15 @@ export default function Navbar() {
             return [
             ...commonFeatures,
             {
-                title: "User Management",
+                title: "Manajemen User",
                 href: "/admin/users/list",
-                description: "Manage all users and permissions."
+                description: "Atur semua user dan aksesnya."
             },
             {
-                title: "Add User",
+                title: "Tambahkan User",
                 href: "/admin/users/add",
-                description: "Add new user."
+                description: "Tambahkan user baru."
             },
-            {
-              title: "Daftar Exchange List",
-              href: "/exchange/list",
-              description: "Lihat Daftar Exchange Pengadaan."
-            },
-            {
-              title: "Dashboard",
-              href: "dashboard",
-              description: "Lihat Dashboard."
-            }
             ];
         case 'staff':
             return [
@@ -65,11 +55,6 @@ export default function Navbar() {
                 title: "Customer Management",
                 href: "/staff/customers",
                 description: "View and manage customer accounts."
-            },
-            {
-                title: "Support Tickets",
-                href: "/staff/tickets",
-                description: "Handle customer support requests."
             },
             {
                 title: "Daftar Request Pengadaan",
@@ -105,11 +90,6 @@ export default function Navbar() {
               title: "My Orders",
               href: "/pengajuan_penawaran_pengadaan",
               description: "Track your orders and purchase history."
-            },
-            {
-                title: "Support",
-                href: "/customer/support",
-                description: "Get help and submit support tickets."
             },
             {
               title: "Daftar Exchange List",
@@ -155,44 +135,28 @@ export default function Navbar() {
                 description: "Track your orders and purchase history."
               },
               {
-                title: "Support",
-                href: "/customer/support",
-                description: "Get help and submit support tickets."
-              },
-              {
                 title: "Daftar Exchange List",
                 href: "/exchange/list",
                 description: "Lihat Daftar Exchange Pengadaan."
               },
               {
                 title: "Dashboard",
-                href: "dashboard",
-                description: "Lihat Dashboard."
+                href: "/dashboard",
+                description: "Lihat tren dan insight penjualan."
               }
+            ];
+       case 'owner':
+            return [
+              ...commonFeatures,
+              {
+                title: "Dashboard",
+                href: "/dashboard",
+                description: "Lihat tren dan insight penjualan."
+              },          
             ];
       default:
         // For unauthenticated users or unknown roles
         return [
-          {
-            title: "Features",
-            href: "/features",
-            description: "Explore our platform features."
-          },
-          {
-            title: "Analytics",
-            href: "/features/analytics",
-            description: "Track your application performance and user engagement."
-          },
-          {
-            title: "Automation",
-            href: "/features/automation",
-            description: "Automate repetitive tasks and workflows."
-          },
-          {
-            title: "Reporting",
-            href: "/features/reporting",
-            description: "Generate detailed reports and insights."
-          }
         ];
     }
   };
@@ -304,13 +268,13 @@ export default function Navbar() {
             </NavigationMenuContent>
           </NavigationMenuItem> */}
           
-          <NavigationMenuItem>
+          {/* <NavigationMenuItem>
             <Link href="/user/detail" legacyBehavior passHref>
               <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                 Profile
               </NavigationMenuLink>
             </Link>
-          </NavigationMenuItem>
+          </NavigationMenuItem> */}
         </NavigationMenuList>
       </NavigationMenu>
 
