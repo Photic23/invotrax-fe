@@ -236,8 +236,8 @@ export default function UserDetailPage() {
             <CardHeader>
               <div className="flex justify-between items-center">
                 <div>
-                  <CardTitle>User Profile</CardTitle>
-                  <CardDescription>{user?.username}'s User Profile</CardDescription>
+                  <CardTitle>Profile User</CardTitle>
+                  <CardDescription>Profile Milik {user?.username}</CardDescription>
                 </div>
                 <Badge variant="outline" className="capitalize">
                   {user?.role || 'Unknown'}
@@ -263,23 +263,23 @@ export default function UserDetailPage() {
                 </div>
                 
                 <div className="grid grid-cols-3 gap-1">
-                  <p className="text-sm font-medium">Phone</p>
+                  <p className="text-sm font-medium">No. Telp</p>
                   <p className="text-sm col-span-2">{user?.phone_number}</p>
                 </div>
                 
                 <div className="grid grid-cols-3 gap-1">
-                  <p className="text-sm font-medium">Company</p>
+                  <p className="text-sm font-medium">Perusahaan</p>
                   <p className="text-sm col-span-2">{user?.company_name}</p>
                 </div>
               </div>
             </CardContent>
             <CardFooter className="flex justify-between">
               <Button variant="outline" onClick={() => router.push('/admin/users/list')}>
-                Back to Users
+                Kembali
               </Button>
               <Button variant="destructive" onClick={() => setIsDeleteDialogOpen(true)}>
                 <Trash className="mr-2 h-4 w-4" />
-                Delete User
+                Hapus User
               </Button>
             </CardFooter>
           </Card>

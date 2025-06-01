@@ -126,8 +126,8 @@ export default function UserRegistrationForm() {
     <div className='flex-grow flex items-center justify-center'>
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
-        <CardTitle>Register New User</CardTitle>
-        <CardDescription>Create a new user account with admin privileges</CardDescription>
+        <CardTitle>Tambahkan User Baru</CardTitle>
+        <CardDescription>Tambahkan user baru dengan role yang diinginkan</CardDescription>
       </CardHeader>
       
       <CardContent>
@@ -136,7 +136,7 @@ export default function UserRegistrationForm() {
             <CheckCircle2 className="h-4 w-4 text-green-600" />
             <AlertTitle>Success</AlertTitle>
             <AlertDescription>
-              User registered successfully!
+              User berhasil didaftarkan!
             </AlertDescription>
           </Alert>
         )}
@@ -189,7 +189,7 @@ export default function UserRegistrationForm() {
             </div>
             
             <div className="grid gap-2">
-              <Label htmlFor="password2">Confirm Password</Label>
+              <Label htmlFor="password2">Konfirmasi Password</Label>
               <Input
                 id="password2"
                 type="password"
@@ -201,7 +201,7 @@ export default function UserRegistrationForm() {
             </div>
             
             <div className="grid gap-2">
-              <Label htmlFor="phone_number">Phone Number</Label>
+              <Label htmlFor="phone_number">No. Telp</Label>
               <Input
                 id="phone_number"
                 name="phone_number"
@@ -212,7 +212,7 @@ export default function UserRegistrationForm() {
             </div>
             
             <div className="grid gap-2">
-              <Label htmlFor="company_name">Company Name</Label>
+              <Label htmlFor="company_name">Nama Perusahaan</Label>
               <Input
                 id="company_name"
                 name="company_name"
@@ -247,7 +247,7 @@ export default function UserRegistrationForm() {
               className="mt-2" 
               disabled={isLoading}
             >
-              {isLoading ? 'Registering...' : 'Register User'}
+              {isLoading ? 'Mendaftarkan...' : 'Daftarkan User'}
             </Button>
           </div>
         </form>

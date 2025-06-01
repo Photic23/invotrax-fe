@@ -210,8 +210,8 @@ export default function UserProfilePage() {
             <CardHeader>
               <div className="flex justify-between items-center">
                 <div>
-                  <CardTitle>User Profile</CardTitle>
-                  <CardDescription>Your account information</CardDescription>
+                  <CardTitle>Profil user</CardTitle>
+                  <CardDescription>Data Akun Anda</CardDescription>
                 </div>
                 <Badge variant="outline" className="capitalize">
                   {profile?.role || 'Unknown'}
@@ -237,12 +237,12 @@ export default function UserProfilePage() {
                 </div>
                 
                 <div className="grid grid-cols-3 gap-1">
-                  <p className="text-sm font-medium">Phone</p>
+                  <p className="text-sm font-medium">No. Telp</p>
                   <p className="text-sm col-span-2">{profile?.phone_number}</p>
                 </div>
                 
                 <div className="grid grid-cols-3 gap-1">
-                  <p className="text-sm font-medium">Company</p>
+                  <p className="text-sm font-medium">Perusahaan</p>
                   <p className="text-sm col-span-2">{profile?.company_name}</p>
                 </div>
               </div>
@@ -250,11 +250,11 @@ export default function UserProfilePage() {
             <CardFooter className="flex justify-between">
               <Button variant="default" onClick={() => router.push('/user/update')}>
                 <Edit className="mr-2 h-4 w-4" />
-                Edit Profile
+                Edit Profil
               </Button>
               <Button variant="destructive" onClick={() => setIsDeleteDialogOpen(true)}>
                 <Trash className="mr-2 h-4 w-4" />
-                Delete Profile
+                Hapus Profil
               </Button>
             </CardFooter>
           </Card>
@@ -269,7 +269,7 @@ export default function UserProfilePage() {
               {deleteError ? (
                 <div className="flex items-center text-destructive">
                   <AlertTriangle className="mr-2 h-5 w-5" />
-                  Unable to Delete Account
+                  Tidak Bisa Menghapus Akun
                 </div>
               ) : (
                 "Are you sure you want to delete your account?"
@@ -284,7 +284,7 @@ export default function UserProfilePage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>Batal</AlertDialogCancel>
             {!deleteError && (
               <AlertDialogAction 
                 onClick={(e) => {
