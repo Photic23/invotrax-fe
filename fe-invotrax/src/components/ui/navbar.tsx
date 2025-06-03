@@ -113,12 +113,12 @@ export default function Navbar() {
               {
                 title: "Kontrak",
                 href: "/kontrak",
-                description: "Manage Contracts, Duration, and Documents."
+                description: "Kelola Kontrak, Durasi, dan Dokumen."
               },
               {
                 title: "Evaluasi Supplier",
                 href: "/evaluasi-supplier",
-                description: "Evaluate suppliers and view evaluation records per quarter."
+                description: "Evaluasi Supplier dan Lihat Rekap Evaluasi per Triwulan."
               },              
               {
                 title: "Daftar Exchange List",

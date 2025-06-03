@@ -67,15 +67,34 @@ const UpdateEvaluasiSupplierForm = ({ evaluasiId }: UpdateEvaluasiSupplierFormPr
     overall: 0
   });
 
-  // Add function to calculate ratings
+  // Update the calculateRatings function
   const calculateRatings = () => {
+    // Calculate individual question ratings first
+    const totalQuestions = 16; // Total number of questions across all categories
+    
+    // Sum all ratings
+    const totalRating = (
+      // Kualitas (5 questions)
+      form.kualitas_1 + form.kualitas_2 + form.kualitas_3 + form.kualitas_4 + form.kualitas_5 +
+      // Harga (3 questions)
+      form.harga_1 + form.harga_2 + form.harga_3 +
+      // Pengiriman (3 questions)
+      form.pengiriman_1 + form.pengiriman_2 + form.pengiriman_3 +
+      // Fleksibilitas (3 questions)
+      form.fleksibilitas_1 + form.fleksibilitas_2 + form.fleksibilitas_3 +
+      // Responsif (2 questions)
+      form.responsif_1 + form.responsif_2
+    );
+
+    // Calculate category averages for display
     const kualitasRating = (form.kualitas_1 + form.kualitas_2 + form.kualitas_3 + form.kualitas_4 + form.kualitas_5) / 5;
     const hargaRating = (form.harga_1 + form.harga_2 + form.harga_3) / 3;
     const pengirimanRating = (form.pengiriman_1 + form.pengiriman_2 + form.pengiriman_3) / 3;
     const fleksibilitasRating = (form.fleksibilitas_1 + form.fleksibilitas_2 + form.fleksibilitas_3) / 3;
     const responsifRating = (form.responsif_1 + form.responsif_2) / 2;
 
-    const overallRating = (kualitasRating + hargaRating + pengirimanRating + fleksibilitasRating + responsifRating) / 5;
+    // Calculate overall rating as average of all questions (not categories)
+    const overallRating = totalRating / totalQuestions;
 
     setCategoryRatings({
       kualitas: Number(kualitasRating.toFixed(2)),
