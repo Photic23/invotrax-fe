@@ -48,13 +48,9 @@ export default function Navbar() {
             return [
             ...commonFeatures,
             {
-                title: "Produk",
+                title: "Daftar Produk",
                 href: "/produk",
-                description: "Manage Products, Stocks, and Categories."
-            },{
-                title: "Customer Management",
-                href: "/staff/customers",
-                description: "View and manage customer accounts."
+                description: "Kelola Produk, Stok, dan Kategori."
             },
             {
                 title: "Daftar Request Pengadaan",
@@ -76,11 +72,11 @@ export default function Navbar() {
         case 'customer':
             return [
             ...commonFeatures,
-            {
-                title: "My Profile",
-                href: "/customer/profile",
-                description: "View and update your account information."
-            },
+            // {
+            //     title: "My Profile",
+            //     href: "/customer/profile",
+            //     description: "View and update your account information."
+            // },
             // {
             //     title: "My Orders",
             //     href: "/customer/orders",

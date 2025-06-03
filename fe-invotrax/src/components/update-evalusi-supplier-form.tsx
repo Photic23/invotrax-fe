@@ -17,6 +17,15 @@ interface UpdateEvaluasiSupplierFormProps {
   evaluasiId: number;
 }
 
+interface CategoryRatings {
+  kualitas: number;
+  harga: number;
+  pengiriman: number;
+  fleksibilitas: number;
+  responsif: number;
+  overall: number;
+}
+
 const initialForm = {
   kualitas_1: 0,
   kualitas_2: 0,
@@ -49,6 +58,39 @@ const UpdateEvaluasiSupplierForm = ({ evaluasiId }: UpdateEvaluasiSupplierFormPr
   const [companyName, setCompanyName] = useState("");
   const [initialLoading, setInitialLoading] = useState(true);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [categoryRatings, setCategoryRatings] = useState<CategoryRatings>({
+    kualitas: 0,
+    harga: 0,
+    pengiriman: 0,
+    fleksibilitas: 0,
+    responsif: 0,
+    overall: 0
+  });
+
+  // Add function to calculate ratings
+  const calculateRatings = () => {
+    const kualitasRating = (form.kualitas_1 + form.kualitas_2 + form.kualitas_3 + form.kualitas_4 + form.kualitas_5) / 5;
+    const hargaRating = (form.harga_1 + form.harga_2 + form.harga_3) / 3;
+    const pengirimanRating = (form.pengiriman_1 + form.pengiriman_2 + form.pengiriman_3) / 3;
+    const fleksibilitasRating = (form.fleksibilitas_1 + form.fleksibilitas_2 + form.fleksibilitas_3) / 3;
+    const responsifRating = (form.responsif_1 + form.responsif_2) / 2;
+
+    const overallRating = (kualitasRating + hargaRating + pengirimanRating + fleksibilitasRating + responsifRating) / 5;
+
+    setCategoryRatings({
+      kualitas: Number(kualitasRating.toFixed(2)),
+      harga: Number(hargaRating.toFixed(2)),
+      pengiriman: Number(pengirimanRating.toFixed(2)),
+      fleksibilitas: Number(fleksibilitasRating.toFixed(2)),
+      responsif: Number(responsifRating.toFixed(2)),
+      overall: Number(overallRating.toFixed(2))
+    });
+  };
+
+  // Update ratings whenever form changes
+  useEffect(() => {
+    calculateRatings();
+  }, [form]);
 
   // Fetch evaluation data
   useEffect(() => {
@@ -263,6 +305,38 @@ const UpdateEvaluasiSupplierForm = ({ evaluasiId }: UpdateEvaluasiSupplierFormPr
           <p><strong>5</strong> = Sangat Baik</p>
         </ul>
       </div>
+
+      {/* Add overall ratings display */}
+      <div className="mb-6 p-4 bg-white rounded-md border shadow-sm">
+        <h3 className="text-lg font-bold mb-3">Ringkasan Rating</h3>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="p-3 bg-gray-50 rounded-md">
+            <div className="text-sm text-gray-600">Kualitas</div>
+            <div className="text-xl font-bold">{categoryRatings.kualitas}</div>
+          </div>
+          <div className="p-3 bg-gray-50 rounded-md">
+            <div className="text-sm text-gray-600">Harga</div>
+            <div className="text-xl font-bold">{categoryRatings.harga}</div>
+          </div>
+          <div className="p-3 bg-gray-50 rounded-md">
+            <div className="text-sm text-gray-600">Pengiriman</div>
+            <div className="text-xl font-bold">{categoryRatings.pengiriman}</div>
+          </div>
+          <div className="p-3 bg-gray-50 rounded-md">
+            <div className="text-sm text-gray-600">Fleksibilitas</div>
+            <div className="text-xl font-bold">{categoryRatings.fleksibilitas}</div>
+          </div>
+          <div className="p-3 bg-gray-50 rounded-md">
+            <div className="text-sm text-gray-600">Responsivitas</div>
+            <div className="text-xl font-bold">{categoryRatings.responsif}</div>
+          </div>
+          <div className="p-3 bg-blue-50 rounded-md">
+            <div className="text-sm text-blue-600">Overall Rating</div>
+            <div className="text-xl font-bold text-blue-700">{categoryRatings.overall}</div>
+          </div>
+        </div>
+      </div>
+
       <table className="w-full border-collapse text-sm">
         <thead>
           <tr className="bg-gray-100 border-b">
@@ -274,7 +348,8 @@ const UpdateEvaluasiSupplierForm = ({ evaluasiId }: UpdateEvaluasiSupplierFormPr
         <tbody>
           <tr className="bg-gray-50 font-bold">
             <td className="py-3 px-2 text-center">A</td>
-            <td className="py-3 px-4" colSpan={2}>Kualitas</td>
+            <td className="py-3 px-4">Kualitas</td>
+            <td className="py-3 px-4 text-center">{categoryRatings.kualitas}</td>
           </tr>
           {renderQuestionRow(1, "Produk yang diterima sesuai dengan spesifikasi yang diminta.", "kualitas_1")}
           {renderQuestionRow(2, "Packaging produk dalam kondisi baik dan tidak rusak.", "kualitas_2")}
@@ -284,7 +359,8 @@ const UpdateEvaluasiSupplierForm = ({ evaluasiId }: UpdateEvaluasiSupplierFormPr
 
           <tr className="bg-gray-50 font-bold">
             <td className="py-3 px-2 text-center">B</td>
-            <td className="py-3 px-4" colSpan={2}>Harga</td>
+            <td className="py-3 px-4">Harga</td>
+            <td className="py-3 px-4 text-center">{categoryRatings.harga}</td>
           </tr>
           {renderQuestionRow(6, "Harga produk yang ditawarkan sesuai dengan harga pasar.", "harga_1")}
           {renderQuestionRow(7, "Biaya pengiriman produk sesuai dengan yang tercantum dalam penawaran.", "harga_2")}
@@ -292,7 +368,8 @@ const UpdateEvaluasiSupplierForm = ({ evaluasiId }: UpdateEvaluasiSupplierFormPr
 
           <tr className="bg-gray-50 font-bold">
             <td className="py-3 px-2 text-center">C</td>
-            <td className="py-3 px-4" colSpan={2}>Pengiriman</td>
+            <td className="py-3 px-4">Pengiriman</td>
+            <td className="py-3 px-4 text-center">{categoryRatings.pengiriman}</td>
           </tr>
           {renderQuestionRow(9, "Produk dikirim sesuai dengan jadwal yang telah disepakati.", "pengiriman_1")}
           {renderQuestionRow(10, "Tidak terjadi keterlambatan dalam pengiriman produk.", "pengiriman_2")}
@@ -300,7 +377,8 @@ const UpdateEvaluasiSupplierForm = ({ evaluasiId }: UpdateEvaluasiSupplierFormPr
 
           <tr className="bg-gray-50 font-bold">
             <td className="py-3 px-2 text-center">D</td>
-            <td className="py-3 px-4" colSpan={2}>Fleksibilitas</td>
+            <td className="py-3 px-4">Fleksibilitas</td>
+            <td className="py-3 px-4 text-center">{categoryRatings.fleksibilitas}</td>
           </tr>
           {renderQuestionRow(12, "Supplier mampu memenuhi perubahan jumlah produk yang dipesan.", "fleksibilitas_1")}
           {renderQuestionRow(13, "Supplier mampu mengakomodasi perubahan jumlah tanpa mempengaruhi jadwal pengiriman.", "fleksibilitas_2")}
@@ -308,7 +386,8 @@ const UpdateEvaluasiSupplierForm = ({ evaluasiId }: UpdateEvaluasiSupplierFormPr
 
           <tr className="bg-gray-50 font-bold">
             <td className="py-3 px-2 text-center">E</td>
-            <td className="py-3 px-4" colSpan={2}>Responsif</td>
+            <td className="py-3 px-4">Responsivitas</td>
+            <td className="py-3 px-4 text-center">{categoryRatings.responsif}</td>
           </tr>
           {renderQuestionRow(15, "Supplier mampu menyelesaikan masalah yang terjadi dengan cepat dan efektif.", "responsif_1")}
           {renderQuestionRow(16, "Supplier mampu mengakomodasi perubahan-perubahan permintaan dari customer.", "responsif_2")}
